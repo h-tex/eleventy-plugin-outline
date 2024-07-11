@@ -24,7 +24,7 @@ export function element ({tag = defaults.tag, attr, attrs = defaults.attrs, cont
 		attrs = re`${attrs}${ attr }${attrs}`;
 	}
 
-	return re`(?<open><(?<tag>${tag})\\b(?<attrs>${attrs})>)(?<content>${ content })</\\k<tag>>`;
+	return re`(?<open><(?<tag>${tag})\\b(?<attrs>${attrs})>)(?<content>${ content })(?<close></\\k<tag>>)`;
 }
 
 /**

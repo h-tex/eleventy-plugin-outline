@@ -7,10 +7,12 @@ but it’s also quite opinionated in how it does things.
 It still affords plenty of customization, but via extensibility rather than configuration.
 
 Features include:
-- [x] Numbering of headings and figures
-- [x] Render an outline for a whole document or just a page, using your own template
-- [ ] Create cross-references to headings, figures, tables, etc.
+- Numbering of headings and figures
+- Render an outline for a whole document or just a page, using your own template
+- Create cross-references to sections, figures, tables, etc.
 
+To-Do:
+- Do not require ids on headings to be already present
 
 ## Installation
 

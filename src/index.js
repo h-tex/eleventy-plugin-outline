@@ -1,26 +1,19 @@
 import Outline from "./Outline.js";
+import Outlines from "./Outlines.js";
 import re, * as match from "./re.js";
-
-export const defaultLabels = {
-	"fig": "Figure",
-	"tab": "Table",
-	// "eq": "Equation",
-	// "sec": "Section",
-	// "appendix": "Appendix",
-}
 
 const idRegex = RegExp(match.id().source, "i");
 const headingRegex = match.element({tag: "h(?<level>[2-6])"});
+const refRegex = match.element({tag: "a", attr: {name: "href", value: "#.+?"}, content: ""});
 const figRegex = match.element({
 	attr: {name: "id"},
 	tag: "figure|table"
 });
 const defRegex = re`${figRegex}|${headingRegex}`;
 
-class Outlines {}
-let outline = new Outlines();
+const outline = new Outlines();
 
-export default function (config, {labels = defaultLabels} = {}) {
+export default function (config, {labels} = {}) {
 	config.addGlobalData("outline", outline);
 
 	function extractAndReplaceXRefs (content, scope) {
@@ -78,8 +71,19 @@ export default function (config, {labels = defaultLabels} = {}) {
 		return content;
 	});
 
-	// config.addTransform("outline", function (content, outputPath) {
-	// 	console.log(outline);
-	// 	return content;
-	// });
+	config.addTransform("outline", function (content, outputPath) {
+		content = content.replaceAll(refRegex, (match, ...args) => {
+			let groups = args.at(-1);
+			let id = groups.value.slice(1);
+			let info = outline.getById(id);
+
+			if (!info) {
+				return match;
+			}
+
+			return groups.open + info.label + " " + info.qualifiedNumber + groups.close;
+		});
+
+		return content;
+	});
 }

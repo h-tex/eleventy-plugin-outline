@@ -16,6 +16,10 @@ export default class Outline extends Array {
 		return this.scope?.qualifiedNumber ?? this.scope ?? "";
 	}
 
+	getById (id) {
+		return this.#index.get(id) ?? this.#figureIndex.get(id);
+	}
+
 	find (callback, options) {
 		for (let heading of this) {
 			let ret = heading.find(callback, options);
@@ -62,12 +66,15 @@ export default class Outline extends Array {
 		let last = this.at(-1);
 
 		if (last) {
-			return last.addFigure(figure);
+			figure = last.addFigure(figure);
 		}
 		else {
 			this.figures ??= new Figures(this);
-			return this.figures.add(figure);
+			figure = this.figures.add(figure);
 		}
+
+		this.#figureIndex.set(figure.id, figure);
+		return figure;
 	}
 
 	toJSON () {

@@ -3,6 +3,7 @@ import Figures from "./Figures.js";
 import { qualifyNumber } from "./util.js";
 
 export default class Heading {
+	// TODO chapter, appendix…
 	static from (o) {
 		if (!o) {
 			return null;
@@ -12,16 +13,14 @@ export default class Heading {
 			Object.setPrototypeOf(o, this.prototype);
 		}
 
+		o.type ??= "section";
+		o.label ??= "Section";
+
 		return o;
 	}
 
 	get qualifiedNumber () {
 		return qualifyNumber(this.parent.qualifiedNumber, this.number);
-	}
-
-	get label () {
-		// TODO
-		return "Section";
 	}
 
 	find (test, {descendIf} = {}) {
