@@ -1,4 +1,5 @@
 import Outline from "./Outline.js";
+import Figures from "./Figures.js";
 import { qualifyNumber } from "./util.js";
 
 export default class Heading {
@@ -15,7 +16,12 @@ export default class Heading {
 	}
 
 	get qualifiedNumber () {
-		return qualifyNumber(this.parent.prefix, this.number);
+		return qualifyNumber(this.parent.qualifiedNumber, this.number);
+	}
+
+	get label () {
+		// TODO
+		return "Section";
 	}
 
 	find (test, {descendIf} = {}) {
@@ -43,6 +49,11 @@ export default class Heading {
 	add (child) {
 		this.children ??= new Outline(this);
 		return this.children.add(child);
+	}
+
+	addFigure (figure) {
+		this.figures ??= new Figures(this);
+		return this.figures.add(figure);
 	}
 
 	toString () {
