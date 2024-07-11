@@ -1,10 +1,11 @@
 {
   "name": "eleventy-plugin-outline",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "description": "This plugin is the swiss army knife when it comes to creating outlines in Eleventy, but it’s also quite opinionated in how it does things. It affords customization via extensibility, rather than configuration.",
   "main": "src/index.js",
   "type": "module",
   "scripts": {
+    "release": "release-it",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -19,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/leaverou/eleventy-plugin-outline/issues"
   },
-  "homepage": "https://github.com/leaverou/eleventy-plugin-outline#readme"
+  "homepage": "https://github.com/leaverou/eleventy-plugin-outline#readme",
+  "devDependencies": {
+    "release-it": "^17.5.0"
+  }
 }
