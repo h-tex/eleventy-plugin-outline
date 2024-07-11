@@ -11,21 +11,18 @@ export function matchAttribute (name, value = ".+?") {
 }
 
 /**
- * Returns a regular expression that matches an element with the specified attribute.
+ * Returns a regular expression that matches an element with the specified criteria.
  * Caveat: element cannot have another element of the same type nested within (yes, you shouldn't parse HTML with regexes)
- * @param {RegExp | string} name
- * @param {RegExp | string} value
  * @param {*} options
  * @returns
  */
-export function matchElementByAttribute (name, value, {tag} = {}) {
-	let attr = matchAttribute(name, value);
+export function matchElementBy ({tag = "(\\w+:)?[\\w-]+", attr, attrs = "[^>]*", content = "[\\S\\s]*?"} = {}) {
+	if (attr) {
+		attr = matchAttribute(attr.name, attr.value);
+		attrs = re`[^>]*${ attr }[^>]*`;
+	}
 
-	return matchElementByType(tag, {attrs: re`[^>]*${ attr }[^>]*`});
-}
-
-export function matchElementByType (tag = "(\\w+:)?[\\w-]+", {attrs = "[^>]*"} = {}) {
-	return re`<(?<tag>${tag})\\b(?<attrs>${attrs})>(?<content>[\\S\\s]*?)</\\k<tag>>`;
+	return re`<(?<tag>${tag})\\b(?<attrs>${attrs})>(?<content>${ content })</\\k<tag>>`;
 }
 
 export function re (strings, ...values) {

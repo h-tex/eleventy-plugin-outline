@@ -1,6 +1,10 @@
 import Outline from "./Outline.js";
-import Heading from "./Heading.js";
-import { qualifyNumber, getIdRegex, matchElementByType, re, matchElementByAttribute } from "./util.js";
+
+import {
+	qualifyNumber,
+	getIdRegex,
+	matchElementBy,
+} from "./util.js";
 
 export const defaultLabels = {
 	"fig": "Figure",
@@ -11,14 +15,15 @@ export const defaultLabels = {
 }
 
 const idRegex = getIdRegex({flags: "i"});
-const headingRegex = matchElementByType("h(?<level>[2-6])");
+const headingRegex = matchElementBy({tag: "h(?<level>[2-6])"});
 
 class Outlines {}
 let outline = new Outlines();
 
 export default function (config, {labels = defaultLabels} = {}) {
 	let labelsRegex = `(?<type>${ Object.keys(labels).join("|") })`;
-	let defRegex = matchElementByAttribute("id", labelsRegex + ":(?<id>.+)", {
+	let defRegex = matchElementBy({
+		attr: {name: "id", value: labelsRegex + ":(?<id>.+)"},
 		tag: "figure|table"
 	});
 
