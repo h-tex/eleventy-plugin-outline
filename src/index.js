@@ -1,5 +1,6 @@
 import Outline from "./Outline.js";
-import { qualifyNumber, getIdRegex } from "./util.js";
+import Heading from "./Heading.js";
+import { qualifyNumber, getIdRegex, matchElementByType, re, matchElementByAttribute } from "./util.js";
 
 export const defaultLabels = {
 	"fig": "Figure",
@@ -10,23 +11,25 @@ export const defaultLabels = {
 }
 
 const idRegex = getIdRegex({flags: "i"});
+const headingRegex = matchElementByType("h(?<level>[2-6])");
 
 class Outlines {}
 let outline = new Outlines();
 
 export default function (config, {labels = defaultLabels} = {}) {
 	let labelsRegex = `(?<type>${ Object.keys(labels).join("|") })`;
-	let defRegex = getIdRegex({idFormat: RegExp(labelsRegex + ":(?<id>.+)")});
+	let defRegex = matchElementByAttribute("id", labelsRegex + ":(?<id>.+)", {
+		tag: "figure|table"
+	});
 
 	config.addGlobalData("outline", outline);
 
 	function extractAndReplaceXRefs (content, scope) {
 		// Arbitrary references where ids start with one of the known prefixes
 		// Here the qualified number is only 2 levels deep: <scope> . <number>
-		content = content.replaceAll(defRegex, (match, ...rest) => {
+		content = content.replaceAll(defRegex, (wholeFigure, ...rest) => {
 			let [groups, string, start, ...submatches] = rest.reverse();
-			let {type, id} = groups;
-			let end = start + match.length;
+			let {type, id, tag} = groups;
 
 			if (!outline?.[scope]?.[type]) {
 				outline[scope] ??= {};
@@ -36,17 +39,21 @@ export default function (config, {labels = defaultLabels} = {}) {
 			let xrefs = outline[scope][type];
 			let number = xrefs.indexOf(id) + 1 || xrefs.push(id);
 			let qualifiedNumber = qualifyNumber(scope, number);
+			let attributesToAdd = `data-number="${ qualifiedNumber }" data-label="${ labels[type] }"`;
 
-			return `data-number="${ qualifiedNumber }"` + match;
+			wholeFigure = wholeFigure.replace("<" + tag, `$& ${ attributesToAdd }`)
+			wholeFigure = wholeFigure.replace(/<(?:fig)?caption/gi, `$& ${ attributesToAdd }`);
+
+			return wholeFigure;
 		});
 
 		// Sections
-		content = content.replaceAll(/<h(?<level>[2-6])(?<attrs>[\S\s]+?)>(?<text>[\S\s]+?)<\/h\1>/ig, (match, ...args) => {
+		content = content.replaceAll(headingRegex, (match, ...args) => {
 			let groups = args.pop();
-			let {level, attrs, text} = groups;
+			let {level, attrs, content} = groups;
 
 			// Trim and collapse whitespace
-			text = text.trim().replace(/\s+/g, " ");
+			let text = content.trim().replace(/\s+/g, " ");
 			let id = attrs.match(idRegex)?.[2];
 
 			// For now, we assume that the id is always present
