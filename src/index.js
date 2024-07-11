@@ -71,7 +71,8 @@ export default function (config, {labels = defaultLabels} = {}) {
 		return content;
 	});
 
-	config.addTransform("outline", function (content, outputPath) {
-		return content;
-	});
+	// config.addTransform("outline", function (content, outputPath) {
+	// 	console.log(outline);
+	// 	return content;
+	// });
 }
