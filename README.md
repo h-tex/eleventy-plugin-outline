@@ -53,9 +53,52 @@ Any sections with ids that are processed via the `outline` filter will automatic
 > In the future I’m hoping to add a way to automatically generate ids for headings that don’t have them,
 > but for now you need to add them yourself, possibly via something like [`markdown-it-anchor`](https://www.npmjs.com/package/markdown-it-anchor).
 
-### Figures and tables
+### Figures
 
-TBD
+Just use a regular HTML `<figure>`:
+
+```markdown
+<figure id="my-figure">
+
+![A diagram where…](figures/diagram.svg)
+
+<figcaption>Progression of Foo over time</figcaption>
+```
+
+### Tables
+
+There are two ways to specify a table.
+The recommended way is a `<figure>`, which also combines nicely with Markdown:
+
+```markdown
+<figure id="my-table">
+
+| Foo | Bar |
+| --- | --- |
+| 1   | 2   |
+
+<figcaption>Table 1: Foo and Bar</figcaption>
+```
+
+You can also use a raw `<table>` with a `<caption>`:
+
+```markdown
+<table id="my-table">
+  <caption>Table 1: Foo and Bar</caption>
+  <thead>
+	<tr>
+	  <th>Foo</th>
+	  <th>Bar</th>
+	</tr>
+  </thead>
+  <tbody>
+	<tr>
+	  <td>1</td>
+	  <td>2</td>
+	</tr>
+  </tbody>
+</table>
+```
 
 ## Installation
 
