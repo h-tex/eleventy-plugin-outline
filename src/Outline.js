@@ -16,6 +16,11 @@ export default class Outline extends Array {
 		return this.scope?.qualifiedNumber ?? this.scope ?? "";
 	}
 
+	/**
+	 * Get a figure or heading that corresponds to the given id
+	 * @param {string} id
+	 * @returns {Heading | Figure}
+	 */
 	getById (id) {
 		return this.#index.get(id) ?? this.#figureIndex.get(id);
 	}
