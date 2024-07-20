@@ -1,10 +1,9 @@
 import Outlines from "./Outlines.js";
 
-const outline = new Outlines();
-
 export default function (config, {labels} = {}) {
-	config.addGlobalData("outline", outline);
+	const outline = new Outlines();
 
+	config.addGlobalData("outline", outline);
 
 	// Pick up figures and headings
 	config.addFilter("outline", function (content, scope = "") {
@@ -18,4 +17,4 @@ export default function (config, {labels} = {}) {
 }
 
 export { Outlines };
-export {default as Outline} from "./Outline.js";
+export { default as Outline } from "./Outline.js";
