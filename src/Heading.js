@@ -4,7 +4,7 @@ import { qualifyNumber } from "./util.js";
 
 export default class Heading {
 	// TODO chapter, appendix…
-	static from (o) {
+	static from (o, parent) {
 		if (!o) {
 			return null;
 		}
@@ -15,6 +15,7 @@ export default class Heading {
 
 		o.type ??= "section";
 		o.label ??= "Section";
+		o.parent ??= parent;
 
 		return o;
 	}

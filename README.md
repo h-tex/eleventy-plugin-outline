@@ -1,17 +1,13 @@
 # eleventy-plugin-outline
 
-This plugin is the swiss army knife when it comes to creating outlines in Eleventy,
-but it’s also quite opinionated in how it does things.
-It still affords plenty of customization, but via extensibility rather than configuration.
+This plugin is the swiss army knife when it comes to creating outlines in Eleventy.
 
 Features include:
-- Numbering of headings and figures
-- Render an outline for a whole document or just a page, using your own template
-- Create cross-references to sections, figures, tables, etc.
-- Works for both Markdown and HTML content
-
-To-Do:
-- Do not require ids on headings to be already present
+- ✅ Numbering of headings and figures
+- ✅ Render an outline for a whole document or just a page, using your own template
+- ✅ Create cross-references to sections, figures, tables, etc.
+- ✅ Works for both Markdown and HTML content
+- ✅ Adds ids to headings if they don’t exist, respects them if they do exist.
 
 ## Usage
 

@@ -54,7 +54,7 @@ export default class Outline extends Array {
 				...heading,
 				number: this.length + 1,
 				parent: this,
-			});
+			}, this);
 			this.push(heading);
 		}
 
