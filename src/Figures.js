@@ -1,5 +1,3 @@
-import { qualifyNumber } from "./util.js";
-
 export default class Figures extends Map {
 	#countsByType = {};
 
@@ -39,12 +37,15 @@ export default class Figures extends Map {
 		figure.number = ++this.#countsByType[figure.type];
 
 		// Figure numbers are shallow, just <root>.<number>
-		figure.qualifiedNumber = qualifyNumber(this.root.qualifiedNumber, figure.number);
-		// figure.qualifiedNumber = qualifyNumber(this.parent.qualifiedNumber, figure.number);
+		figure.qualifiedNumberPrefix = this.root.qualifiedNumber ? this.root.qualifiedNumber + this.constructor.numberSeparator : "";
+		// figure.qualifiedNumberPrefix = this.parent.qualifiedNumber ? this.parent.qualifiedNumber + this.constructor.numberSeparator : "";
+		figure.qualifiedNumber = figure.qualifiedNumberPrefix + figure.number;
 
 		this.set(figure.id, figure);
 		return figure;
 	}
+
+	static numberSeparator = ".";
 
 	static prefixes = {
 		"fig:": "figure",

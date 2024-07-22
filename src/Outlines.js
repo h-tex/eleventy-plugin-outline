@@ -9,6 +9,7 @@ const figRegex = match.element({
 	attr: {name: "id"},
 	tag: "figure|table"
 });
+const captionRegex = match.element({tag: "figcaption"});
 const defRegex = re`${figRegex}|${headingRegex}`;
 const refRegex = match.element({tag: "a", attr: {name: "href", value: "#.+?"}, content: ""});
 
@@ -30,6 +31,12 @@ export default class Outlines {
 		return null;
 	}
 
+	/**
+	 * Process raw HTML, extract headings and figures, and build an outline
+	 * @param {*} content
+	 * @param {*} scope
+	 * @returns {string} The updated content
+	 */
 	process (content, scope) {
 		// Sections
 		content = content.replaceAll(defRegex, (html, ...args) => {
@@ -66,6 +73,7 @@ export default class Outlines {
 				info = this[scope].add(info);
 
 				attributesToAdd += ` data-number="${ info.qualifiedNumber }" data-label="${ info.label }"`;
+				innerHTML = `${ getNumberHTML(info) } ` + innerHTML;
 
 				return info.html = `<h${level}${attributesToAdd}${attrs}>${innerHTML}</h${level}>`;
 			}
@@ -77,9 +85,16 @@ export default class Outlines {
 				info = this[scope].addFigure(info);
 
 				let attributesToAdd = `data-number="${ info.qualifiedNumber }" data-label="${ info.label }"`;
+				html = html.replace("<" + tag, `$& ${ attributesToAdd }`);
 
-				html = html.replace("<" + tag, `$& ${ attributesToAdd }`)
-				html = html.replace(/<(?:fig)?caption/gi, `$& ${ attributesToAdd }`);
+				html = html.replace(captionRegex, (captionHtml, ...args) => {
+					let groups = match.processGroups(args.at(-1));
+					let {tag: captionTag, attrs: captionAttrs, content: captionContent} = groups;
+
+					captionContent = `<span class="label">${ info.label } ${ getNumberHTML(info) }</span>` + captionContent;
+
+					return `<${ captionTag }${ captionAttrs }>${ captionContent }</${ captionTag }>`;
+				});
 
 				return info.html = html;
 			}
@@ -88,6 +103,12 @@ export default class Outlines {
 		return content;
 	}
 
+	/**
+	 * Replace empty xref links with labels like "Figure 3.2"
+	 * @param {*} content
+	 * @param {string} scope
+	 * @returns {string} The updated content
+	 */
 	resolveXRefs (content, scope) {
 		let outline = scope === undefined ? this : this[scope];
 
@@ -106,4 +127,8 @@ export default class Outlines {
 
 		return content;
 	}
+}
+
+function getNumberHTML (info) {
+	return `<span class="outline-number">${ info.qualifiedNumberPrefix }<span class="this-number">${ info.number }</span></span>`;
 }

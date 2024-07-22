@@ -1,8 +1,9 @@
 import Outline from "./Outline.js";
 import Figures from "./Figures.js";
-import { qualifyNumber } from "./util.js";
 
 export default class Heading {
+	static numberSeparator = ".";
+
 	// TODO chapter, appendix…
 	static from (o, parent) {
 		if (!o) {
@@ -21,7 +22,11 @@ export default class Heading {
 	}
 
 	get qualifiedNumber () {
-		return qualifyNumber(this.parent.qualifiedNumber, this.number);
+		return this.qualifiedNumberPrefix + this.number;
+	}
+
+	get qualifiedNumberPrefix () {
+		return this.parent.qualifiedNumber ? this.parent.qualifiedNumber + this.constructor.numberSeparator : "";
 	}
 
 	find (test, {descendIf} = {}) {

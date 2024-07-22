@@ -1,7 +1,3 @@
-export function qualifyNumber (scope, number) {
-	return scope ? `${ scope }.${ number }` : number;
-}
-
 export function slugify (text) {
 	return (text + "")
 			.normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Convert accented letters to ASCII
