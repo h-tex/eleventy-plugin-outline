@@ -24,7 +24,7 @@ export default class Figures extends Map {
 			let prefix = figure.id.split(":").reverse().at(-1);
 
 			if (prefix) {
-				figure.type = Figures[prefix + ":"] ?? "figure";
+				figure.type = Figures.prefixes[prefix + ":"] ?? "figure";
 			}
 			else {
 				figure.type = figure.html.includes("<table") ? "table" : "figure";
