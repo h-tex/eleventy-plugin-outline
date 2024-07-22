@@ -124,3 +124,7 @@ eleventyConfig.addPlugin(outline);
 ```
 
 if you have any plugins generating ids, make sure they are included before this one.
+
+## Limitations
+
+- Does not work well in watch mode.
