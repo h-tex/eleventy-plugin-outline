@@ -48,9 +48,8 @@ export default class Figures extends Map {
 	static numberSeparator = ".";
 
 	static prefixes = {
-		"fig:": "figure",
-		"tab:": "table",
-		"eq:": "equation",
+		"tab": "table",
+		"eq": "equation",
 	}
 
 	static labels = {
