@@ -3,12 +3,9 @@ import re, * as match from "./re.js";
 import {slugify} from "./util.js";
 
 const idRegex = RegExp(match.id().source, "i");
-const headingRegex = match.element({tag: "h(?<level>[2-6])"});
 const elementRegex = match.element();
-const figRegex = match.element({
-	attr: {name: "id"},
-	tag: "figure|table"
-});
+const headingRegex = match.element({tag: "h(?<level>[2-6])"});
+const figRegex = match.element({tag: "figure|table"});
 const captionRegex = match.element({tag: "figcaption"});
 const defRegex = re`${figRegex}|${headingRegex}`;
 const refRegex = match.element({tag: "a", attr: {name: "href", value: "#.+?"}, content: ""});
@@ -41,57 +38,90 @@ export default class Outlines {
 		// Sections
 		content = content.replaceAll(defRegex, (html, ...args) => {
 			let groups = match.processGroups(args.at(-1));
-			let {tag, attrs, content} = groups;
+			let {tag, attrs = "", content, level} = groups;
+			let id = attrs.match(idRegex)?.[2];
 			let index = args.at(-3);
+			let info = {id, level, attrs, index, html};
+			let isHeading = tag.startsWith("h");
 
 			this[scope] ??= new Outline(scope);
 
-			if (tag.startsWith("h")) {
-				let {level} = groups;
-
+			if (isHeading) {
 				// Trim and collapse whitespace
-				let text = content.trim().replace(/\s+/g, " ");
-				let id = attrs.match(idRegex)?.[2];
-				let innerHTML = text;
-				let attributesToAdd = "";
+				content = content.trim().replace(/\s+/g, " ");
+			}
 
+			if (id) {
+				info.originalId = id;
+			}
+			else {
 				// Set id if not present
-				if (!id) {
-					let textContent = text.replaceAll(elementRegex, "$k<content>");
-					id = slugify(textContent);
-					// let existing = this.getById(id);
-					// if (existing) {
-					// 	console.warn("Duplicate id:", id);
-					// }
-					attributesToAdd += ` id="${ id }"`;
-					innerHTML = `<a class="header-anchor" href="#${ id }">${ text }</a>`;
+				if (isHeading) {
+					// Strip HTML
+					info.text = content.replaceAll(elementRegex, "$k<content>");
+					id = slugify(info.text);
+				}
+				else {
+					info.text = content.match(captionRegex)?.groups.content;
+
+					if (info.text) {
+						// Match first line or until the first period
+						let excerpt = text.match(/^.+?(\.|$)/);
+						id = "fig-" + slugify(excerpt);
+					}
+					else {
+						id = tag;
+					}
 				}
 
-				let info = {id, level, text, attrs, index, html};
+				info.id = id;
+				attrs += ` id="${ id }"`;
+			}
 
+			if (this.getById(id)) {
+				// Duplicate id
+				let i = 2;
+				while (this.getById(id + "-" + i)) {
+					i++;
+				}
+				id += "-" + i;
+				attrs = attrs.replace(idRegex, `id="${ id }"`);
+
+				if (info.originalId) {
+					console.log(`Duplicate id: ${ info.originalId } → ${ id }`);
+				}
+			}
+
+			if (info.originalId === id) {
+				delete info.originalId;
+			}
+
+			info.id = id;
+			info.attrs = attrs;
+
+			if (isHeading) {
 				// Find where this fits in the existing hierarchy
 				info = this[scope].add(info);
-
-				attributesToAdd += ` data-number="${ info.qualifiedNumber }" data-label="${ info.label }"`;
-				innerHTML = `${ getNumberHTML(info) } ` + innerHTML;
-
-				return info.html = `<h${level}${attributesToAdd}${attrs}>${innerHTML}</h${level}>`;
 			}
 			else {
 				// Figure. Here the qualified number is only 2 levels deep: <scope> . <number>
-				let {value: id} = groups;
-
-				let info = {id, index, html};
 				info = this[scope].addFigure(info);
+			}
 
-				let attributesToAdd = `data-number="${ info.qualifiedNumber }" data-label="${ info.label }"`;
+			let attributesToAdd = ` data-number="${ info.qualifiedNumber }" data-label="${ info.label }"`;
+
+			if (isHeading) {
+				content = `${ getNumberHTML(info, "a", ` href="#${ id }"`) } <a href="#${ id }" class="header-anchor">${ content }</a>`;
+
+				return info.html = `<h${level}${attributesToAdd}${attrs}>${content}</h${level}>`;
+			}
+			else {
 				html = html.replace("<" + tag, `$& ${ attributesToAdd }`);
-
 				html = html.replace(captionRegex, (captionHtml, ...args) => {
 					let groups = match.processGroups(args.at(-1));
 					let {tag: captionTag, attrs: captionAttrs, content: captionContent} = groups;
 
-					captionContent = `<span class="label">${ info.label } ${ getNumberHTML(info) }</span>` + captionContent;
+					captionContent = `<a href="#${ id }" class="label">${ info.label } ${ getNumberHTML(info) }</a>` + captionContent;
 
 					return `<${ captionTag }${ captionAttrs }>${ captionContent }</${ captionTag }>`;
 				});
@@ -129,6 +159,6 @@ export default class Outlines {
 	}
 }
 
-function getNumberHTML (info) {
-	return `<span class="outline-number">${ info.qualifiedNumberPrefix }<span class="this-number">${ info.number }</span></span>`;
+function getNumberHTML (info, tag = "span", attrs = "") {
+	return `<${tag}${attrs} class="outline-number">${ info.qualifiedNumberPrefix }<span class="this-number">${ info.number }</span></${ tag }>`;
 }
