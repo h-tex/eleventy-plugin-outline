@@ -6,10 +6,11 @@ export default class Outline extends Array {
 	#index = new Map();
 	#figureIndex = new Map();
 
-	constructor (scope) {
+	constructor (scope, options) {
 		super();
 
 		this.scope = scope;
+		this.options = options;
 	}
 
 	get qualifiedNumber () {
@@ -50,11 +51,11 @@ export default class Outline extends Array {
 		}
 		else {
 			// This is a top-level section
-			heading = Heading.from({
+			heading = new Heading({
 				...heading,
 				number: this.length + 1,
 				parent: this,
-			}, this);
+			}, this.options);
 			this.push(heading);
 		}
 

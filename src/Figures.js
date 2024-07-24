@@ -21,40 +21,28 @@ export default class Figures extends Map {
 		}
 
 		if (!figure.type) {
-			let prefix = figure.id.split(":").reverse().at(-1);
-
-			if (prefix) {
-				figure.type = Figures.prefixes[prefix + ":"] ?? "figure";
-			}
-			else {
-				figure.type = figure.html.includes("<table") ? "table" : "figure";
-			}
+			figure.type = this.parent.options.getFigureType(figure) ?? "figure";
 		}
 
-		figure.label = Figures.labels[figure.type] ?? figure.type[0].toUpperCase() + figure.type.slice(1);
+		figure.label = this.parent.options.getFigureLabel(figure) ?? figure.type[0].toUpperCase() + figure.type.slice(1);
 
 		this.#countsByType[figure.type] ??= 0;
 		figure.number = ++this.#countsByType[figure.type];
 
 		// Figure numbers are shallow, just <root>.<number>
-		figure.qualifiedNumberPrefix = this.root.qualifiedNumber ? this.root.qualifiedNumber + this.constructor.numberSeparator : "";
-		// figure.qualifiedNumberPrefix = this.parent.qualifiedNumber ? this.parent.qualifiedNumber + this.constructor.numberSeparator : "";
+		figure.qualifiedNumberPrefix = this.root.qualifiedNumber ? this.root.qualifiedNumber + this.numberSeparator : "";
+		// figure.qualifiedNumberPrefix = this.parent.qualifiedNumber ? this.parent.qualifiedNumber + this.numberSeparator : "";
 		figure.qualifiedNumber = figure.qualifiedNumberPrefix + figure.number;
 
 		this.set(figure.id, figure);
 		return figure;
 	}
 
-	static numberSeparator = ".";
-
-	static prefixes = {
-		"tab": "table",
-		"eq": "equation",
+	get options () {
+		return this.parent.options;
 	}
 
-	static labels = {
-		figure: "Figure",
-		table: "Table",
-		equation: "Equation",
+	get numberSeparator () {
+		return this.options.figureNumberSeparator ?? ".";
 	}
 }

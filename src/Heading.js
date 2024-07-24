@@ -2,23 +2,16 @@ import Outline from "./Outline.js";
 import Figures from "./Figures.js";
 
 export default class Heading {
-	static numberSeparator = ".";
-
 	// TODO chapter, appendix…
-	static from (o, parent) {
-		if (!o) {
-			return null;
-		}
+	constructor (heading, options) {
+		Object.assign(this, heading);
+		this.options = options;
+		this.type ??= this.options.getHeadingType(heading) ?? "section";
+		this.label ??= this.options.getHeadingLabel(heading) ?? this.type[0].toUpperCase() + this.type.slice(1);
+	}
 
-		if (!(o instanceof this) && typeof o === "object") {
-			Object.setPrototypeOf(o, this.prototype);
-		}
-
-		o.type ??= "section";
-		o.label ??= "Section";
-		o.parent ??= parent;
-
-		return o;
+	get numberSeparator () {
+		return this.options.headingNumberSeparator ?? ".";
 	}
 
 	get qualifiedNumber () {
@@ -26,7 +19,7 @@ export default class Heading {
 	}
 
 	get qualifiedNumberPrefix () {
-		return this.parent.qualifiedNumber ? this.parent.qualifiedNumber + this.constructor.numberSeparator : "";
+		return this.parent.qualifiedNumber ? this.parent.qualifiedNumber + this.numberSeparator : "";
 	}
 
 	find (test, {descendIf} = {}) {
@@ -52,7 +45,7 @@ export default class Heading {
 	}
 
 	add (child) {
-		this.children ??= new Outline(this);
+		this.children ??= new Outline(this, this.options);
 		return this.children.add(child);
 	}
 

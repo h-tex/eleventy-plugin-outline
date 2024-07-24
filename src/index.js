@@ -1,7 +1,7 @@
 import Outlines from "./Outlines.js";
 
-export default function (config, {labels} = {}) {
-	const outline = new Outlines();
+export default function (config, options) {
+	const outline = new Outlines(options);
 
 	config.addGlobalData("outline", outline);
 

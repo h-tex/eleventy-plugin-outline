@@ -11,13 +11,44 @@ const defRegex = re`${figRegex}|${headingRegex}`;
 const refRegex = match.element({tag: "a", attr: {name: "href", value: "#.+?"}, content: ""});
 
 export default class Outlines {
+	constructor (options = {}) {
+		options = Object.assign({}, Outlines.defaultOptions, options);
+		Object.defineProperty(this, "options", {value: options, enumerable: false});
+	}
+
+	static defaultOptions = {
+		getFigureLabel (figure) {},
+		getHeadingLabel (info, type) {
+			if (info.level == 1) {
+				return "Chapter";
+			}
+		},
+		getFigureType (figure) {
+			if (/^tab[:-]/.test(figure.id) || figure.html.includes("<table")) {
+				return "table";
+			}
+			if (/^eq[:-]/.test(figure.id) || figure.html.includes("<table")) {
+				return "equation";
+			}
+		},
+		getHeadingType (info) {
+
+		},
+		figureTags: ["figure", "table"],
+		uniqueIdsAcrossScopes: true,
+	}
+
 	/**
 	 * Get a figure or heading that corresponds to the given id across all scopes
 	 * @param {string} id
 	 * @returns {Heading | Figure}
 	 */
-	getById (id) {
+	getById (id, {scopeNot, scopeOnly} = {}) {
 		for (let scope in this) {
+			if (scope === scopeNot || scopeOnly && scope !== scopeOnly) {
+				continue;
+			}
+
 			let outline = this[scope];
 			let ret = outline.getById(id);
 			if (ret) {
@@ -41,10 +72,10 @@ export default class Outlines {
 			let {tag, attrs = "", content, level} = groups;
 			let id = attrs.match(idRegex)?.[2];
 			let index = args.at(-3);
-			let info = {id, level, attrs, index, html};
+			let info = {id, level, attrs, index, html, content};
 			let isHeading = tag.startsWith("h");
 
-			this[scope] ??= new Outline(scope);
+			this[scope] ??= new Outline(scope, this.options);
 
 			if (isHeading) {
 				// Trim and collapse whitespace
@@ -58,7 +89,7 @@ export default class Outlines {
 				// Set id if not present
 				if (isHeading) {
 					// Strip HTML
-					info.text = content.replaceAll(elementRegex, "$k<content>");
+					info.text = content.replaceAll(elementRegex, "$<content>");
 					id = slugify(info.text);
 				}
 				else {
@@ -78,19 +109,29 @@ export default class Outlines {
 				attrs += ` id="${ id }"`;
 			}
 
-			if (this.getById(id)) {
-				// Duplicate id
-				let i = 2;
-				while (this.getById(id + "-" + i)) {
-					i++;
-				}
-				id += "-" + i;
-				attrs = attrs.replace(idRegex, `id="${ id }"`);
+			// Check for duplicates if we’re enforcing uniqueness across all scopes
+			// or we’re creating an id
+			if (this.options.uniqueIdsAcrossScopes || !info.originalId) {
+				let options = {
+					scopeNot: info.originalId ? scope : undefined,
+					scopeOnly: this.options.uniqueIdsAcrossScopes ? undefined : scope,
+				};
+				let duplicate = this.getById(id, options);
+				if (duplicate && duplicate.index !== info.index) {
+					// Duplicate id
+					let i = 2;
+					while (this.getById(id + "-" + i, options)) {
+						i++;
+					}
+					id += "-" + i;
+					attrs = attrs.replace(idRegex, `id="${ id }"`);
 
-				if (info.originalId) {
-					console.log(`Duplicate id: ${ info.originalId } → ${ id }`);
+					if (info.originalId) {
+						console.log(`Duplicate id: ${ info.originalId } → ${ id }`);
+					}
 				}
 			}
+
 
 			if (info.originalId === id) {
 				delete info.originalId;
