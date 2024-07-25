@@ -24,10 +24,25 @@ export default class Outlines {
 			}
 		},
 		getFigureType (figure) {
-			if (/^tab[:-]/.test(figure.id) || figure.html.includes("<table")) {
+			if (/^fig(ure)?[:-]/.test(figure.id)) {
+				// Early exit to avoid heuristics messing things up
+				return "figure";
+			}
+
+			if (/^tab(le)?[:-]/.test(figure.id)) {
 				return "table";
 			}
-			if (/^eq[:-]/.test(figure.id) || figure.html.includes("<table")) {
+
+			if (/^eq(uation)?[:-]/.test(figure.id)) {
+				return "equation";
+			}
+
+			// No prefix, need to look at content
+			if (figure.html.includes("<table")) {
+				return "table";
+			}
+
+			if (figure.html.includes(figure.html.includes("<math") || figure.html.includes("<mjx-container"))) {
 				return "equation";
 			}
 		},
