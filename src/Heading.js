@@ -5,6 +5,11 @@ export default class Heading {
 	// TODO chapter, appendix…
 	constructor (heading, options) {
 		Object.assign(this, heading);
+
+		if (this.parent?.level && this.parent.level < this.level - 1) {
+			console.warn(`Level jump: From <${this.tag}${attrs}>${this.text}</${this.tag}> to <${this.parent.tag}${this.parent.attrs}>${this.parent.text}</${this.parent.tag}>`);
+		}
+
 		this.options = options;
 		this.type ??= this.options.getHeadingType(heading) ?? "section";
 		this.label ??= this.options.getHeadingLabel(heading) ?? this.type[0].toUpperCase() + this.type.slice(1);
