@@ -7,7 +7,7 @@ export default class Heading {
 		Object.assign(this, heading);
 
 		if (this.parent?.level && this.parent.level < this.level - 1) {
-			console.warn(`Level jump: From <${this.tag}${attrs}>${this.text}</${this.tag}> to <${this.parent.tag}${this.parent.attrs}>${this.parent.text}</${this.parent.tag}>`);
+			console.warn(`Level jump: From <${this.tag}${this.attrs}>${this.text}</${this.tag}> to <${this.parent.tag}${this.parent.attrs}>${this.parent.text}</${this.parent.tag}>`);
 		}
 
 		this.options = options;
