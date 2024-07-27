@@ -4,6 +4,13 @@ export default function (config, options) {
 	const outlines = new Outlines(options);
 
 	config.addGlobalData("outlines", outlines);
+	// config.addGlobalData("eleventyComputed", {
+	// 	outline (data) {
+	// 		let ret = outlines.get(undefined, data.page);
+
+	// 		return ret;
+	// 	}
+	// });
 
 	// Pick up figures and headings
 	config.addFilter("outline", function (content, scope) {
