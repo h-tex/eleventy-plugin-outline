@@ -114,12 +114,6 @@ export default class Outlines {
 			let info = {id, level: level ? Number(level) : undefined, attrs, attributes, index, html: originalHTML, content, inputPath, outputPath, url};
 			let isHeading = tag.startsWith("h");
 
-			if (groups.close === undefined && !html.voidElements.has(tag)) {
-				console.warn(`[outline] Unterminated ${ originalHTML } at ${ index } in ${ scope } (${ inputPath })`);
-				return originalHTML;
-			}
-
-
 			let outline = this[scope] ??= new Outline(null, this.options);
 
 			if (id) {
