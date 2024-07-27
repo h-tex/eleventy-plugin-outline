@@ -1,4 +1,5 @@
 import { capitalize } from "./util.js";
+import { stringifyElement } from "./html.js";
 
 /**
  * @abstract
@@ -43,5 +44,9 @@ export default class OutlineItem {
 
 	toJSON () {
 		return Object.assign({}, this);
+	}
+
+	toString () {
+		return stringifyElement(this);
 	}
 }
