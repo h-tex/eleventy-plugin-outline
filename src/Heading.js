@@ -59,11 +59,6 @@ export default class Heading {
 		return this.figures.add(figure);
 	}
 
-	toString () {
-		let {level, text, attrs, qualifiedNumber} = this;
-		return `<h${level} data-number="${ qualifiedNumber }"${attrs}>${text}</h${level}>`;
-	}
-
 	toJSON () {
 		return Object.assign({}, this);
 	}
