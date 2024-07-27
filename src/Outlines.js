@@ -88,7 +88,7 @@ export default class Outlines {
 		content = content.replaceAll(defRegex, (originalHTML, ...args) => {
 			let groups = match.processGroups(args.at(-1));
 			let {tag, attrs = "", content, level} = groups;
-			let id = attrs.match(idRegex)?.[2];
+			let id = attrs.match(idRegex)?.groups?.value;
 			let index = args.at(-3);
 			let info = {id, level, attrs, index, originalHTML, html: originalHTML, content};
 			let isHeading = tag.startsWith("h");
