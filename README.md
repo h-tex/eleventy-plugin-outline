@@ -8,6 +8,7 @@ Features include:
 - ✅ Create cross-references to sections, figures, tables, etc.
 - ✅ Works for both Markdown and HTML content
 - ✅ Adds ids to headings if they don’t exist, respects them if they do exist.
+- ✅ Warns about heading jumps (e.g. going from `<h1>` to `<h3>` without an `<h2>`)
 
 ## Usage
 
@@ -55,7 +56,7 @@ References are simply empty links, e.g. `[](#fig:myfigure)` in Markdown or `<a h
 
 ### Sections
 
-Any headings will be picked up by the plugin unless excluded by the `excludeHeadings` option (which takes a function).
+Any headings will be picked up by the plugin unless excluded by the `exclude` option (which takes a function).
 If they already have ids (e.g. via something like [`markdown-it-anchor`](https://www.npmjs.com/package/markdown-it-anchor)), they will be preserved.
 If they don’t, ids that are unique within the specified scope will be generated for them.
 
