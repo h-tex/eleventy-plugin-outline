@@ -1,14 +1,15 @@
 import Outline from "./Outline.js";
 import re, * as match from "./re.js";
+import * as html from "./html.js";
 import {slugify} from "./util.js";
 
-const idRegex = RegExp(match.id().source, "i");
-const elementRegex = match.element();
-const headingRegex = match.element({tag: "h(?<level>[2-6])"});
-const figRegex = match.element({tag: "figure|table"});
-const captionRegex = match.element({tag: "figcaption"});
+const idRegex = RegExp(html.id().source, "i");
+const elementRegex = html.element();
+const headingRegex = html.element({tag: "h(?<level>[1-6])"});
+const figRegex = html.element({tag: "figure|table"});
+const captionRegex = html.element({tag: "figcaption"});
 const defRegex = re`${figRegex}|${headingRegex}`;
-const refRegex = match.element({tag: "a", attr: {name: "href", value: "#.+?"}, content: ""});
+const refRegex = html.element({tag: "a", attr: {name: "href", value: "#.+?"}, content: ""});
 
 export default class Outlines {
 	constructor (options = {}) {
