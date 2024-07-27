@@ -3,16 +3,16 @@ import Figures from "./Figures.js";
 
 export default class Heading {
 	// TODO chapter, appendix…
-	constructor (heading, options) {
-		Object.assign(this, heading);
+	constructor (info, options) {
+		Object.assign(this, info);
 
 		if (this.parent?.level && this.parent.level < this.level - 1) {
 			console.warn(`Level jump: From <${this.tag}${this.attrs}>${this.text}</${this.tag}> to <${this.parent.tag}${this.parent.attrs}>${this.parent.text}</${this.parent.tag}>`);
 		}
 
 		this.options = options;
-		this.type ??= this.options.getHeadingType(heading) ?? "section";
-		this.label ??= this.options.getHeadingLabel(heading) ?? this.type[0].toUpperCase() + this.type.slice(1);
+		this.type ??= this.options.getHeadingType(info) ?? "section";
+		this.label ??= this.options.getHeadingLabel(info) ?? this.type[0].toUpperCase() + this.type.slice(1);
 	}
 
 	get numberSeparator () {
@@ -46,7 +46,6 @@ export default class Heading {
 		if (this.children && this.level < 6 && (!descendIf || descendIf(this))) {
 			return this.children.find(test, {descendIf});
 		}
-
 	}
 
 	add (child) {
