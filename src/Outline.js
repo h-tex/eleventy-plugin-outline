@@ -1,23 +1,12 @@
 import Heading from "./Heading.js";
 import Figures from "./Figures.js";
+import OutlineItems from "./OutlineItems.js";
 
-export default class Outline extends Array {
+export default class Outline extends OutlineItems {
 	// Flat maps of id to object
 	#index = new Map();
 	#figureIndex = new Map();
-
-	children = [];
-
-	constructor (parent, options) {
-		super();
-
-		this.parent = parent;
-		Object.defineProperty(this, "options", { value: options, enumerable: false, writable: true });
-	}
-
-	get qualifiedNumber () {
-		return this.parent?.qualifiedNumber ?? "";
-	}
+	static of = Heading;
 
 	/**
 	 * Get a figure or heading that corresponds to the given id
@@ -28,20 +17,8 @@ export default class Outline extends Array {
 		return this.#index.get(id) ?? this.#figureIndex.get(id);
 	}
 
-	find (callback, options) {
-		for (let heading of this) {
-			let ret = heading.find(callback, options);
-
-			if (ret !== undefined) {
-				return ret;
-			}
-		}
-
-		return null;
-	}
-
 	add (heading) {
-		let last = this.at(-1); // possibly ancestor
+		let last = this.lastValue; // possibly ancestor
 
 		if (last && heading.level > last.level) {
 			// This is a child
@@ -49,11 +26,7 @@ export default class Outline extends Array {
 		}
 		else {
 			// This is a top-level section
-			heading = new Heading({
-				...heading,
-				number: heading.number ?? this.length + 1,
-			}, this.options, this);
-			this.push(heading);
+			heading = super.add(heading);
 		}
 
 		this.#index.set(heading.id, heading);
@@ -62,7 +35,7 @@ export default class Outline extends Array {
 	}
 
 	addFigure (figure) {
-		let last = this.at(-1);
+		let last = this.lastValue;
 
 		if (last) {
 			figure = last.addFigure(figure);
@@ -74,6 +47,14 @@ export default class Outline extends Array {
 
 		this.#figureIndex.set(figure.id, figure);
 		return figure;
+	}
+
+	get lastValue () {
+		return [...this.values()].at(-1);
+	}
+
+	get length () {
+		return this.size;
 	}
 
 	toJSON () {

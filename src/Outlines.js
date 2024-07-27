@@ -80,7 +80,7 @@ export default class Outlines {
 			let attributes = html.parseAttributes(attrs);
 			let id = attributes.id;
 			let index = args.at(-3);
-			let info = {id, level: level ? Number(level) : undefined, attrs, attributes, index, html: originalHTML, content, inputPath, outputPath, url};
+			let info = {id, level: level ? Number(level) : undefined, tag, attrs, attributes, index, html: originalHTML, content, inputPath, outputPath, url};
 			let isHeading = tag.startsWith("h");
 
 			let outline = this[scope] ??= new Outline(null, this.options);

@@ -14,7 +14,11 @@ export default class OutlineItem {
 
 		for (let property in info) {
 			// We want to be able to override the getters, e.g. to provide a custom number
-			Object.defineProperty(this, property, {value: info[property], enumerable: true, writable: true});
+			Object.defineProperty(this, property, {
+				value: info[property],
+				enumerable: true,
+				writable: property !== "id", // we key on id so it should be immutable
+			});
 		}
 
 		Object.defineProperties(this, {
@@ -26,6 +30,10 @@ export default class OutlineItem {
 		this.label ??= this.options.getLabel(info, this.type) ?? capitalize(this.type);
 	}
 
+	get root () {
+		return this.parent ? this.parent.root : this;
+	}
+
 	get numberSeparator () {
 		return this.options.getSeparator?.(this) ?? ".";
 	}
@@ -35,11 +43,13 @@ export default class OutlineItem {
 	}
 
 	get qualifiedNumberPrefix () {
-		return this.parent.qualifiedNumber ? this.parent.qualifiedNumber + this.numberSeparator : "";
+		return this.parent?.qualifiedNumber ? this.parent.qualifiedNumber + this.numberSeparator : "";
 	}
 
 	get rootPrefix () {
-		return this.parent?.parent ? this.parent.rootPrefix : this.parent.qualifiedNumberPrefix;
+		let root = this.root;
+		let isRoot = root === this;
+		return isRoot ? "" : root.qualifiedNumber + this.numberSeparator;
 	}
 
 	toJSON () {

@@ -40,6 +40,10 @@ export function element ({tag = defaults.tag, attr, attrs = defaults.attrs, cont
 }
 
 export function parseAttributes (source) {
+	if (source === undefined) {
+		return;
+	}
+
 	let pattern = attribute();
 	let all = parseAll(pattern, source);
 
