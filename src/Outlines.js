@@ -18,12 +18,18 @@ export default class Outlines {
 	}
 
 	static defaultOptions = {
-		getFigureLabel (figure) {},
-		getHeadingLabel (info, type) {
+		getHeadingType (info) {
 			if (info.level == 1) {
 				return "Chapter";
 			}
 		},
+		getHeadingLabel (info, type) {
+
+		},
+		excludeHeading (info, scope) {
+			return false;
+		},
+
 		getFigureType (figure) {
 			if (/^fig(ure)?[:-]/.test(figure.id)) {
 				// Early exit to avoid heuristics messing things up
@@ -47,8 +53,9 @@ export default class Outlines {
 				return "equation";
 			}
 		},
-		getHeadingType (info) {
-
+		getFigureLabel (figure, type) {},
+		excludeFigure (info, scope) {
+			return false;
 		},
 		figureTags: ["figure", "table"],
 		uniqueIdsAcrossScopes: true,
