@@ -81,7 +81,9 @@ export default class Outlines {
 	 * @param {*} scope
 	 * @returns {string} The updated content
 	 */
-	process (content, scope) {
+	process (content, scope, context) {
+		let {inputPath, outputPath, url} = context?.page ?? {};
+
 		// Sections
 		content = content.replaceAll(defRegex, (originalHTML, ...args) => {
 			let groups = match.processGroups(args.at(-1));
@@ -201,7 +203,7 @@ export default class Outlines {
 	 * @param {string} scope
 	 * @returns {string} The updated content
 	 */
-	resolveXRefs (content, scope) {
+	resolveXRefs (content, scope, context) {
 		let outline = scope === undefined ? this : this[scope];
 
 		content = content.replaceAll(refRegex, (match, ...args) => {
