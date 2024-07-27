@@ -78,13 +78,18 @@ export function stringifyAttributes (attributes) {
 			q = "'";
 		}
 
-		`${ name }=${q}${ value }${q}`
+		return `${ name }=${q}${ value }${q}`;
 	}).join(" ");
 }
 
 export function stringifyElement (element) {
-	let {tag = "div", attributes = {}, attrs = stringifyAttributes(attributes), content = ""} = element;
-	attrs = attrs ? ` ${ attrs }` : "";
+	let {tag = "div", attributes, attrs = stringifyAttributes(attributes), content = ""} = element;
+
+	if (attributes) {
+		attrs = stringifyAttributes(attributes);
+	}
+	attrs = attrs ? ` ${ attrs.trimLeft() }` : "";
+
 	let ret = `<${ tag }${ attrs }>${ content }</${ tag }>`;
 
 	return ret;
