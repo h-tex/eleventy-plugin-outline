@@ -141,14 +141,15 @@ export default class Outlines {
 			attributes["data-number"] ??= info.qualifiedNumber;
 			attributes["data-label"] ??= info.label;
 
-			let numberHTML = html.stringifyElement({
-				tag: isHeading ? "a" : "span",
-				attrs: (isHeading ? ` href="#${ id }"` : "") + ` class="outline-number"`,
-				content: `${ info.qualifiedNumberPrefix ?? "" }<span class="this-number">${ info.number }</span>`,
-			});
+			let getMarker = isHeading ? "getHeadingMarker" : "getFigureMarker";
+			let marker = this.options[getMarker](info, scope);
+
+			if (marker === undefined && this.options[getMarker] !== defaultOptions[getMarker]) {
+				marker = defaultOptions[getMarker](info, scope);
+			}
 
 			if (isHeading) {
-				content = numberHTML + `<a href="#${ id }" class="header-anchor">${ content }</a>`;
+				content = marker + `<a href="#${ id }" class="header-anchor">${ content }</a>`;
 			}
 			else {
 				content = content.replace(captionRegex, (captionHtml, ...args) => {
@@ -156,7 +157,7 @@ export default class Outlines {
 					info.caption = caption;
 					caption.originalHTML = captionHtml;
 
-					let captionContent = `<a href="#${ id }" class="label">${ info.label } ${ numberHTML }</a>` + caption.content;
+					let captionContent = marker + caption.content;
 					return caption.html = html.stringifyElement({
 						...caption,
 						content: captionContent,
