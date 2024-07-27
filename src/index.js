@@ -1,18 +1,23 @@
 import Outlines from "./Outlines.js";
 
 export default function (config, options) {
-	const outline = new Outlines(options);
+	const outlines = new Outlines(options);
 
-	config.addGlobalData("outline", outline);
+	config.addGlobalData("outlines", outlines);
 
 	// Pick up figures and headings
-	config.addFilter("outline", function (content, scope = "") {
-		return outline.process(content, scope, this);
+	config.addFilter("outline", function (content, scope) {
+		return outlines.process(content, scope, this);
 	});
 
 	// Replace empty xref links with labels like "Figure 3.2"
 	config.addTransform("outline", function (content) {
-		return outline.resolveXRefs(content, undefined, this);
+		return outlines.resolveXRefs(content, undefined, this);
+	});
+
+	// For control over scope
+	config.addFilter("xrefs", function (content, scope) {
+		return outlines.resolveXRefs(content, scope, this);
 	});
 }
 

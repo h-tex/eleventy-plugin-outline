@@ -4,13 +4,24 @@ import Figures from "./Figures.js";
 export default class Heading {
 	// TODO chapter, appendix…
 	constructor (info, options) {
-		Object.assign(this, info);
+		// Object.assign(this, info);
+		if (info.qualifiedNumber) {
+			// If the number is custom-set, we don’t really have a prefix
+			info.qualifiedNumberPrefix ??= "";
+		}
+
+		for (let property in info) {
+			// We want to be able to override the getters, e.g. to provide a custom number
+			Object.defineProperty(this, property, {value: info[property], enumerable: true, writable: true});
+		}
 
 		if (this.parent?.level && this.parent.level < this.level - 1) {
 			console.warn(`Level jump: From <${this.tag}${this.attrs}>${this.text}</${this.tag}> to <${this.parent.tag}${this.parent.attrs}>${this.parent.text}</${this.parent.tag}>`);
 		}
 
-		this.options = options;
+		// this.options = options;
+		Object.defineProperty(this, "options", { value: options, writable: true });
+
 		this.type ??= this.options.getHeadingType(info) ?? "section";
 		this.label ??= this.options.getHeadingLabel(info) ?? this.type[0].toUpperCase() + this.type.slice(1);
 	}

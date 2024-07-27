@@ -3,12 +3,18 @@ import re, * as match from "./re.js";
 import * as html from "./html.js";
 import {slugify} from "./util.js";
 
-const idRegex = RegExp(html.id().source, "i");
 const headingRegex = html.element({tag: "h(?<level>[1-6])"});
 const figRegex = html.element({tag: "figure|table"});
 const captionRegex = html.element({tag: "figcaption"});
 const defRegex = re`${figRegex}|${headingRegex}`;
 const refRegex = html.element({tag: "a", attr: {name: "href", value: "#.+?"}, content: ""});
+
+const attributesToProperties = {
+	"data-number": "qualifiedNumber",
+	"data-label": "label",
+	"data-own-number": "number",
+	"data-qualified-number-prefix": "qualifiedNumberPrefix",
+};
 
 export default class Outlines {
 	constructor (options = {}) {
@@ -57,7 +63,6 @@ export default class Outlines {
 			return false;
 		},
 		figureTags: ["figure", "table"],
-		uniqueIdsAcrossScopes: true,
 	}
 
 	/**
@@ -72,14 +77,20 @@ export default class Outlines {
 			}
 
 			let outline = this[scope];
-			let ret = outline.getById(id);
-			if (ret) {
-				return ret;
+
+			if (outline instanceof Outline) {
+				let ret = outline.getById(id);
+				if (ret) {
+					return ret;
+				}
 			}
 		}
 
 		return null;
 	}
+
+	pageToScopes = {};
+	scopeToPages = {};
 
 	/**
 	 * Process raw HTML, extract headings and figures, and build an outline
@@ -89,14 +100,18 @@ export default class Outlines {
 	 */
 	process (content, scope, context) {
 		let {inputPath, outputPath, url} = context?.page ?? {};
+		scope ??= url ?? "";
+		(this.pageToScopes[url] ??= new Set()).add(scope);
+		(this.scopeToPages[scope] ??= new Set()).add(url);
 
 		// Sections
 		content = content.replaceAll(defRegex, (originalHTML, ...args) => {
 			let groups = match.processGroups(args.at(-1));
 			let {tag, attrs = "", content, level} = groups;
-			let id = attrs.match(idRegex)?.groups?.value;
+			let attributes = html.parseAttributes(attrs);
+			let id = attributes.id;
 			let index = args.at(-3);
-			let info = {id, level, attrs, index, originalHTML, html: originalHTML, content};
+			let info = {id, level: level ? Number(level) : undefined, attrs, attributes, index, html: originalHTML, content, inputPath, outputPath, url};
 			let isHeading = tag.startsWith("h");
 
 			if (groups.close === undefined && !html.voidElements.has(tag)) {
@@ -104,12 +119,8 @@ export default class Outlines {
 				return originalHTML;
 			}
 
-			this[scope] ??= new Outline(scope, this.options);
 
-			if (isHeading) {
-				// Trim and collapse whitespace
-				content = content.trim().replace(/\s+/g, " ");
-			}
+			let outline = this[scope] ??= new Outline(null, this.options);
 
 			if (id) {
 				info.originalId = id;
@@ -133,74 +144,110 @@ export default class Outlines {
 						id = tag;
 					}
 				}
-
-				info.id = id;
-				attrs += ` id="${ id }"`;
 			}
 
-			// Check for duplicates if we’re enforcing uniqueness across all scopes
-			// or we’re creating an id
-			if (this.options.uniqueIdsAcrossScopes || !info.originalId) {
-				let options = {
-					scopeNot: info.originalId ? scope : undefined,
-					scopeOnly: this.options.uniqueIdsAcrossScopes ? undefined : scope,
-				};
-				let duplicate = this.getById(id, options);
-				if (duplicate && duplicate.index !== info.index) {
-					// Duplicate id
-					let i = 2;
-					while (this.getById(id + "-" + i, options)) {
-						i++;
-					}
-					id += "-" + i;
-					attrs = attrs.replace(idRegex, `id="${ id }"`);
+			// Check for duplicates
+			let duplicate = outline.getById(id);
+			if (duplicate) {
+				// Duplicate id
+				let i = 2;
+				while (outline.getById(id + "-" + i)) {
+					i++;
+				}
+				id += "-" + i;
 
-					if (info.originalId) {
-						console.log(`Duplicate id: ${ info.originalId } → ${ id }`);
-					}
+				if (info.originalId) {
+					console.log(`[outline] Duplicate id: ${ info.originalId } → ${ id } in ${ scope }`);
 				}
 			}
-
 
 			if (info.originalId === id) {
 				delete info.originalId;
 			}
+			else {
+				attributes.id = id;
+			}
+
+			for (let attribute in attributesToProperties) {
+				if (attributes[attribute]) {
+					info[attributesToProperties[attribute]] = attributes[attribute];
+				}
+			}
 
 			info.id = id;
-			info.attrs = attrs;
+			info.originalHTML = originalHTML;
 
 			if (isHeading) {
+				if (this.options.excludeHeading.call(context, info, scope)) {
+					return originalHTML;
+				}
+
 				// Find where this fits in the existing hierarchy
-				info = this[scope].add(info);
+				info = outline.add(info);
 			}
 			else {
+				if (this.options.excludeFigure.call(context, info, scope)) {
+					return originalHTML;
+				}
+
 				// Figure. Here the qualified number is only 2 levels deep: <scope> . <number>
-				info = this[scope].addFigure(info);
+				info = outline.addFigure(info);
 			}
 
-			let attributesToAdd = ` data-number="${ info.qualifiedNumber }" data-label="${ info.label }"`;
+			attributes["data-number"] ??= info.qualifiedNumber;
+			attributes["data-label"] ??= info.label;
+
+			let numberHTML = html.stringifyElement({
+				tag: isHeading ? "a" : "span",
+				attrs: (isHeading ? ` href="#${ id }"` : "") + ` class="outline-number"`,
+				content: `${ info.qualifiedNumberPrefix ?? "" }<span class="this-number">${ info.number }</span>`,
+			});
 
 			if (isHeading) {
-				content = `${ getNumberHTML(info, "a", ` href="#${ id }"`) } <a href="#${ id }" class="header-anchor">${ content }</a>`;
-
-				return info.html = `<h${level}${attributesToAdd}${attrs}>${content}</h${level}>`;
+				content = numberHTML + `<a href="#${ id }" class="header-anchor">${ content }</a>`;
 			}
 			else {
-				info.html = originalHTML.replace("<" + tag, `$& ${ attributesToAdd }`)
-					.replace(captionRegex, (captionHtml, ...args) => {
-						let groups = match.processGroups(args.at(-1));
-						let {tag: captionTag, attrs: captionAttrs, content: captionContent} = groups;
+				content = content.replace(captionRegex, (captionHtml, ...args) => {
+					let caption = match.processGroups(args.at(-1));
+					info.caption = caption;
+					caption.originalHTML = captionHtml;
 
-						captionContent = `<a href="#${ id }" class="label">${ info.label } ${ getNumberHTML(info) }</a>` + captionContent;
-
-						return `<${ captionTag }${ captionAttrs }>${ captionContent }</${ captionTag }>`;
+					let captionContent = `<a href="#${ id }" class="label">${ info.label } ${ numberHTML }</a>` + caption.content;
+					return caption.html = html.stringifyElement({
+						...caption,
+						content: captionContent,
 					});
-
-				return info.html;
+				});
 			}
+
+			info.html = html.stringifyElement({tag, attributes, content});
+
+			return info.html;
 		});
 
 		return content;
+	}
+
+	/**
+	 * Get the outline associated with the current scope
+	 * @param {*} scope
+	 * @returns {Outline | null} The outline if exactly one exists, otherwise null.
+	 */
+	get (scope, page) {
+		if (!scope) {
+			// If no scope provided, check if page is associated with exactly one
+			let pageScopes = this.pageToScopes[page.url];
+
+			if (!pageScopes || pageScopes.size !== 1) {
+				// If multiple scopes per page, we need an explicit scope to be passed in
+				// If no scopes per page, there’s nothing to do
+				return null;
+			}
+
+			scope = pageScopes.values().next().value;
+		}
+
+		return this[scope] ?? null;
 	}
 
 	/**
@@ -210,7 +257,11 @@ export default class Outlines {
 	 * @returns {string} The updated content
 	 */
 	resolveXRefs (content, scope, context) {
-		let outline = scope === undefined ? this : this[scope];
+		let outline = this.get(scope, context?.page);
+
+		if (!outline) {
+			return content;
+		}
 
 		content = content.replaceAll(refRegex, (match, ...args) => {
 			let groups = args.at(-1);
@@ -227,8 +278,4 @@ export default class Outlines {
 
 		return content;
 	}
-}
-
-function getNumberHTML (info, tag = "span", attrs = "") {
-	return `<${tag}${attrs} class="outline-number">${ info.qualifiedNumberPrefix }<span class="this-number">${ info.number }</span></${ tag }>`;
 }

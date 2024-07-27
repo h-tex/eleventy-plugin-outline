@@ -6,15 +6,18 @@ export default class Outline extends Array {
 	#index = new Map();
 	#figureIndex = new Map();
 
-	constructor (scope, options) {
+	children = [];
+
+	constructor (parent, options) {
 		super();
 
-		this.scope = scope;
+		this.parent = parent;
 		this.options = options;
+		// Object.defineProperty(this, "options", { value: options, writable: true });
 	}
 
 	get qualifiedNumber () {
-		return this.scope?.qualifiedNumber ?? this.scope ?? "";
+		return this.parent?.qualifiedNumber ?? this.parent ?? "";
 	}
 
 	/**
@@ -39,10 +42,6 @@ export default class Outline extends Array {
 	}
 
 	add (heading) {
-		if (this.#index.has(heading.id)) {
-			return this.#index.get(heading.id);
-		}
-
 		let last = this.at(-1); // possibly ancestor
 
 		if (last && heading.level > last.level) {
@@ -65,10 +64,6 @@ export default class Outline extends Array {
 	}
 
 	addFigure (figure) {
-		if (this.#figureIndex.has(figure.id)) {
-			return this.#figureIndex.get(figure.id);
-		}
-
 		let last = this.at(-1);
 
 		if (last) {

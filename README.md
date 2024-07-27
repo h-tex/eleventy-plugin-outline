@@ -19,20 +19,32 @@ and adds this info to the HTML.
 {{ content | outline | safe }}
 ```
 
-You can also pass a scope parameter, for any top-level information that cannot be determined from the content:
+By default, outlines are scoped to the output path (regardless of how many files it’s made up of).
+However, somtimes you want outlines to span multiple output paths,
+for example chapters in a book.
+To join up outlines across multiple output paths (or create multiple separate outlines within the same output path),
+you can use a scope argument:
 
 ```njk
-{{ content | outline(chapterNumber) | safe }}
+{{ content | outline(scope) | safe }}
 ```
 
-This is useful when you render the same content in different contexts, like a whole book or a single chapter.
-
 > [!WARNING]
-> Any duplicate ids within the same scope are ignored. In the future I’m hoping to make this plugin smarter about this,
-> but it’s nontrivial because it’s a design goal to be able to process the same content multiple times and still end up with the same outline.
+> Ids need to be unique within a scope.
+> If they are not, they will be rewritten to be unique (and produce a warning),
+> and any ids generated will also be unique within the scope.
 
-Once content is processed, you can read the `outline` global data object to render the outline.
-It’s keyed on the scope you passed.
+Once content is processed, you can read the `outline` global data object to render an outline for the current URL,
+or `outline[scope]` for a specific scope.
+
+**When you have at most one scope per page,
+cross-references will be processed automatically.**
+However, when you have multiple scopes within the same page,
+we can’t know which references belong to which scope, so you need to process them manually with the `xrefs` filter:
+
+```njk
+{{ content | xrefs(scope) | safe }}
+```
 
 ## Syntax
 
@@ -43,11 +55,12 @@ References are simply empty links, e.g. `[](#fig:myfigure)` in Markdown or `<a h
 
 ### Sections
 
-Any sections with ids that are processed via the `outline` filter will automatically take part in the outline.
+Any headings will be picked up by the plugin unless excluded by the `excludeHeadings` option (which takes a function).
+If they already have ids (e.g. via something like [`markdown-it-anchor`](https://www.npmjs.com/package/markdown-it-anchor)), they will be preserved.
+If they don’t, ids that are unique within the specified scope will be generated for them.
 
 > [!NOTE]
-> In the future I’m hoping to add a way to automatically generate ids for headings that don’t have them,
-> but for now you need to add them yourself, possibly via something like [`markdown-it-anchor`](https://www.npmjs.com/package/markdown-it-anchor).
+> In the future I’m hoping to add a way to exclude certain headings from the outline.
 
 ### Figures
 
@@ -104,6 +117,104 @@ You can also use a raw `<table>` with a `<caption>`:
   </tbody>
 </table>
 ```
+
+## Data structure
+
+The outline data structure the plugin builds has the following general structure:
+
+```ts
+class Outline extends Array<Heading> {
+
+}
+
+class Heading {
+	id: string;
+
+	// Iff the id was rewritten to be unique, this will contain the original
+	originalId: string;
+
+	// The heading level (1-6)
+	level: number;
+
+	// HTML attributes as a string. This includes id.
+	attrs: string;
+
+	// The original HTML content of the heading
+	content: string;
+
+	// The trimmed text content of the heading
+	// With all elements stripped off
+	text: string;
+
+	// The full HTML of the heading
+	html: string;
+
+	// This section’s number (without parent numbers)
+	// E.g. for section 1.2.3, this would be 3
+	number: string;
+
+	// The full number, including parent numbers
+	qualifiedNumber: string;
+
+	// The parent section’s qualified number, plus the separator
+	qualifiedNumberPrefix: string;
+
+	// The textual index of this heading in the content processed
+	index: number;
+
+	// The page input path (e.g. "foo/index.md")
+	inputPath: string;
+
+	// The page output path (e.g. "dist/foo/index.html")
+	outputPath: string;
+
+	// The page URL (e.g. "/foo/")
+	url: string;
+
+	// Child headings
+	children: Outline;
+
+	// Figures in this section (but not in children)
+	figures: Figures;
+}
+
+class Figures extends Map<string, Figure> {
+
+}
+
+class Figure {
+	id: string;
+
+	// Iff the id was rewritten to be unique, this will contain the original
+	originalId: string;
+
+	// HTML attributes as a string. This includes id.
+	attrs: string;
+
+	// The original HTML content of the figure
+	content: string;
+
+	// The trimmed text content of the figure
+	// With all elements stripped off
+	text: string;
+
+	// The full HTML of the figure
+	html: string;
+
+	index: number;
+
+	// The page input path (e.g. "foo/index.md")
+	inputPath: string;
+
+	// The page output path (e.g. "foo/index.html")
+	outputPath: string;
+
+	// The page URL
+	url: string;
+}
+```
+
+
 
 ## Installation
 
