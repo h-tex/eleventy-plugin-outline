@@ -30,13 +30,13 @@ export const voidElements = new Set([
  * @param {*} options
  * @returns
  */
-export function element ({tag = defaults.tag, attr, attrs = defaults.attrs, content = defaults.content} = {}) {
+export function element ({tag = defaults.tag, attr, attrs = defaults.attrs, content = defaults.content, allowEmpty = false} = {}) {
 	if (attr) {
 		attr = attribute(attr);
 		attrs = re`${attrs}${ attr }${attrs}`;
 	}
 
-	return re`(?<open><(?<tag>${tag})\\b(?<attrs>${attrs})>)(?:(?<content>${ content })(?<close></\\k<tag>>))?`;
+	return re`(?<open><(?<tag>${tag})\\b(?<attrs>${attrs})>)(?:(?<content>${ content })(?<close></\\k<tag>>))${ allowEmpty ? "?" : "" }`;
 }
 
 export function parseAttributes (source) {
@@ -95,10 +95,19 @@ export function stringifyElement (element) {
 	return ret;
 }
 
-const anyElement = element();
+const anyLeafElement = element({content: "[^<]*"});
+const anyVoidElement = element({tag: [...voidElements].join("|"), allowEmpty: true});
 export function textContent (content) {
-	// Trim and collapse whitespace
-	content = content.trim().replace(/\s+/g, " ");
 
-	return content.replaceAll(anyElement, "$<content>");
+	content = content.replaceAll(anyVoidElement, "");
+	let previousContent;
+
+	do {
+		previousContent = content;
+		// Trim and collapse whitespace
+		content = content.trim().replace(/\s+/g, " ");
+		content = content.replaceAll(anyLeafElement, "$<content>");
+	} while (content !== previousContent);
+
+	return content;
 }
