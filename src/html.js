@@ -94,3 +94,11 @@ export function stringifyElement (element) {
 
 	return ret;
 }
+
+const anyElement = html.element();
+export function textContent (content) {
+	// Trim and collapse whitespace
+	content = content.trim().replace(/\s+/g, " ");
+
+	return content.replaceAll(anyElement, "$<content>");
+}

@@ -4,7 +4,6 @@ import * as html from "./html.js";
 import {slugify} from "./util.js";
 
 const idRegex = RegExp(html.id().source, "i");
-const elementRegex = html.element();
 const headingRegex = html.element({tag: "h(?<level>[1-6])"});
 const figRegex = html.element({tag: "figure|table"});
 const captionRegex = html.element({tag: "figcaption"});
@@ -119,7 +118,7 @@ export default class Outlines {
 				// Set id if not present
 				if (isHeading) {
 					// Strip HTML
-					info.text = content.replaceAll(elementRegex, "$<content>");
+					info.text = html.textContent(content);
 					id = slugify(info.text);
 				}
 				else {
