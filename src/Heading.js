@@ -11,7 +11,7 @@ export default class Heading extends OutlineItem {
 		super(info, options, parent);
 
 		if (this.parent?.level && this.parent.level < this.level - 1) {
-			console.warn(`Level jump: From ${this} to ${this.parent}`);
+			console.warn(`[outline] Level jump in ${this.url}: From ${this.parent} to ${this}`);
 		}
 	}
 
