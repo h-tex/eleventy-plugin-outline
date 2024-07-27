@@ -19,16 +19,18 @@ const attributesToProperties = {
 
 export default class Outlines {
 	constructor (options = {}) {
-		Object.defineProperty(this, "options", {value: {}, enumerable: false});
+		Object.defineProperty(this, "options", {value: Object.create(defaultOptions), enumerable: false});
 
-		for (let key in defaultOptions) {
-			this.options[key] = options[key] ? function (...args) {
+		for (let key in options) {
+			this.options[key] = function (...args) {
 				let ret = options[key].call(this, ...args);
 
 				if (ret === undefined) {
 					return defaultOptions[key].call(this, ...args);
 				}
-			 } : defaultOptions[key];
+
+				return ret;
+			 };
 		}
 	}
 
