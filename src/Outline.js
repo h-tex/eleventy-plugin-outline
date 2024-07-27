@@ -16,7 +16,7 @@ export default class Outline extends Array {
 	}
 
 	get qualifiedNumber () {
-		return this.parent?.qualifiedNumber ?? this.parent ?? "";
+		return this.parent?.qualifiedNumber ?? "";
 	}
 
 	/**

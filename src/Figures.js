@@ -33,10 +33,6 @@ export default class Figures extends Map {
 		return figure;
 	}
 
-	get options () {
-		return this.options;
-	}
-
 	get numberSeparator () {
 		return this.options.figureNumberSeparator ?? ".";
 	}
