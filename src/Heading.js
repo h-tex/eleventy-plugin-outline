@@ -65,7 +65,7 @@ export default class Heading {
 	}
 
 	addFigure (figure) {
-		this.figures ??= new Figures(this);
+		this.figures ??= new Figures(this, this.options);
 		return this.figures.add(figure);
 	}
 
