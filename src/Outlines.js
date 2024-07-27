@@ -2,6 +2,7 @@ import Outline from "./Outline.js";
 import re, * as match from "./re.js";
 import * as html from "./html.js";
 import {slugify} from "./util.js";
+import * as defaultOptions from "./defaultOptions.js";
 
 const headingRegex = html.element({tag: "h(?<level>[1-6])"});
 const figRegex = html.element({tag: "figure|table"});
@@ -18,51 +19,8 @@ const attributesToProperties = {
 
 export default class Outlines {
 	constructor (options = {}) {
-		options = Object.assign({}, Outlines.defaultOptions, options);
+		options = Object.assign({}, defaultOptions, options);
 		Object.defineProperty(this, "options", {value: options, enumerable: false});
-	}
-
-	static defaultOptions = {
-		getHeadingType (info) {
-			if (info.level == 1) {
-				return "chapter";
-			}
-		},
-		getHeadingLabel (info, type) {
-
-		},
-		excludeHeading (info, scope) {
-			return false;
-		},
-
-		getFigureType (figure) {
-			if (/^fig(ure)?[:-]/.test(figure.id)) {
-				// Early exit to avoid heuristics messing things up
-				return "figure";
-			}
-
-			if (/^tab(le)?[:-]/.test(figure.id)) {
-				return "table";
-			}
-
-			if (/^eq(uation)?[:-]/.test(figure.id)) {
-				return "equation";
-			}
-
-			// No prefix, need to look at content
-			if (figure.html.includes("<table")) {
-				return "table";
-			}
-
-			if (figure.html.includes(figure.html.includes("<math") || figure.html.includes("<mjx-container"))) {
-				return "equation";
-			}
-		},
-		getFigureLabel (figure, type) {},
-		excludeFigure (info, scope) {
-			return false;
-		},
-		figureTags: ["figure", "table"],
 	}
 
 	/**
