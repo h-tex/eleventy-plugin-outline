@@ -129,22 +129,14 @@ export default class Outlines {
 			info.id = id;
 			info.originalHTML = originalHTML;
 
-			if (isHeading) {
-				if (this.options.excludeHeading.call(context, info, scope)) {
-					return originalHTML;
-				}
+			let exclude = isHeading ? "excludeHeading" : "excludeFigure";
 
-				// Find where this fits in the existing hierarchy
-				info = outline.add(info);
+			if (this.options[exclude].call(context, info, scope)) {
+				return originalHTML;
 			}
-			else {
-				if (this.options.excludeFigure.call(context, info, scope)) {
-					return originalHTML;
-				}
 
-				// Figure. Here the qualified number is only 2 levels deep: <scope> . <number>
-				info = outline.addFigure(info);
-			}
+			let add = isHeading ? "add" : "addFigure";
+			info = outline[add](info);
 
 			attributes["data-number"] ??= info.qualifiedNumber;
 			attributes["data-label"] ??= info.label;
