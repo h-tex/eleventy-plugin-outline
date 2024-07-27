@@ -12,8 +12,7 @@ export default class Outline extends Array {
 		super();
 
 		this.parent = parent;
-		this.options = options;
-		// Object.defineProperty(this, "options", { value: options, writable: true });
+		Object.defineProperty(this, "options", { value: options, enumerable: false, writable: true });
 	}
 
 	get qualifiedNumber () {

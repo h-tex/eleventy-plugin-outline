@@ -12,7 +12,7 @@ export default class Heading {
 
 		for (let property in info) {
 			// We want to be able to override the getters, e.g. to provide a custom number
-			Object.defineProperty(this, property, {value: info[property], enumerable: true, writable: true});
+			Object.defineProperty(this, property, {value: info[property], enumerable: property !== "parent", writable: true});
 		}
 
 		if (this.parent?.level && this.parent.level < this.level - 1) {
@@ -20,7 +20,7 @@ export default class Heading {
 		}
 
 		// this.options = options;
-		Object.defineProperty(this, "options", { value: options, writable: true });
+		Object.defineProperty(this, "options", { value: options, enumerable: false, writable: true });
 
 		this.type ??= this.options.getHeadingType(info) ?? "section";
 		this.label ??= this.options.getHeadingLabel(info) ?? this.type[0].toUpperCase() + this.type.slice(1);
