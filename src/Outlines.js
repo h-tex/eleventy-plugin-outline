@@ -20,7 +20,7 @@ export default class Outlines {
 	static defaultOptions = {
 		getHeadingType (info) {
 			if (info.level == 1) {
-				return "Chapter";
+				return "chapter";
 			}
 		},
 		getHeadingLabel (info, type) {
