@@ -51,9 +51,8 @@ export default class Outline extends Array {
 			// This is a top-level section
 			heading = new Heading({
 				...heading,
-				number: this.length + 1,
-				parent: this,
-			}, this.options);
+				number: heading.number ?? this.length + 1,
+			}, this.options, this);
 			this.push(heading);
 		}
 

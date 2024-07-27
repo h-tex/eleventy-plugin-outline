@@ -1,42 +1,18 @@
 import Outline from "./Outline.js";
 import Figures from "./Figures.js";
-import { capitalize } from "./util.js";
+import OutlineItem from "./OutlineItem.js";
 
-export default class Heading {
+export default class Heading extends OutlineItem {
+	kind = "section";
+	static defaultType = "section";
+
 	// TODO chapter, appendix…
-	constructor (info, options) {
-		// Object.assign(this, info);
-		if (info.qualifiedNumber) {
-			// If the number is custom-set, we don’t really have a prefix
-			info.qualifiedNumberPrefix ??= "";
-		}
-
-		for (let property in info) {
-			// We want to be able to override the getters, e.g. to provide a custom number
-			Object.defineProperty(this, property, {value: info[property], enumerable: property !== "parent", writable: true});
-		}
+	constructor (info, options, parent) {
+		super(info, options, parent);
 
 		if (this.parent?.level && this.parent.level < this.level - 1) {
 			console.warn(`Level jump: From <${this.tag}${this.attrs}>${this.text}</${this.tag}> to <${this.parent.tag}${this.parent.attrs}>${this.parent.text}</${this.parent.tag}>`);
 		}
-
-		// this.options = options;
-		Object.defineProperty(this, "options", { value: options, enumerable: false, writable: true });
-
-		this.type ??= this.options.getHeadingType(info) ?? "section";
-		this.label ??= this.options.getHeadingLabel(info) ?? capitalize(this.type);
-	}
-
-	get numberSeparator () {
-		return this.options.headingNumberSeparator ?? ".";
-	}
-
-	get qualifiedNumber () {
-		return this.qualifiedNumberPrefix + this.number;
-	}
-
-	get qualifiedNumberPrefix () {
-		return this.parent.qualifiedNumber ? this.parent.qualifiedNumber + this.numberSeparator : "";
 	}
 
 	find (test, {descendIf} = {}) {
@@ -68,9 +44,5 @@ export default class Heading {
 	addFigure (figure) {
 		this.figures ??= new Figures(this, this.options);
 		return this.figures.add(figure);
-	}
-
-	toJSON () {
-		return Object.assign({}, this);
 	}
 }

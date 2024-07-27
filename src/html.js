@@ -66,7 +66,7 @@ export function stringifyAttributes (attributes) {
 			return name;
 		}
 
-		if (!value.includes) console.log(attributes)
+		value = value + "";
 
 		let has = {quot: value.includes('"'), apos: value.includes("'")};
 		let q = '"';

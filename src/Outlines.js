@@ -14,13 +14,22 @@ const attributesToProperties = {
 	"data-number": "qualifiedNumber",
 	"data-label": "label",
 	"data-own-number": "number",
-	"data-qualified-number-prefix": "qualifiedNumberPrefix",
+	"data-prefix": "qualifiedNumberPrefix",
 };
 
 export default class Outlines {
 	constructor (options = {}) {
-		options = Object.assign({}, defaultOptions, options);
-		Object.defineProperty(this, "options", {value: options, enumerable: false});
+		Object.defineProperty(this, "options", {value: {}, enumerable: false});
+
+		for (let key in defaultOptions) {
+			this.options[key] = options[key] ? function (...args) {
+				let ret = options[key].call(this, ...args);
+
+				if (ret === undefined) {
+					return defaultOptions[key].call(this, ...args);
+				}
+			 } : defaultOptions[key];
+		}
 	}
 
 	/**
@@ -129,9 +138,7 @@ export default class Outlines {
 			info.id = id;
 			info.originalHTML = originalHTML;
 
-			let exclude = isHeading ? "excludeHeading" : "excludeFigure";
-
-			if (this.options[exclude].call(context, info, scope)) {
+			if (this.options.exclude.call(context, info, scope)) {
 				return originalHTML;
 			}
 
@@ -141,12 +148,7 @@ export default class Outlines {
 			attributes["data-number"] ??= info.qualifiedNumber;
 			attributes["data-label"] ??= info.label;
 
-			let getMarker = isHeading ? "getHeadingMarker" : "getFigureMarker";
-			let marker = this.options[getMarker](info, scope);
-
-			if (marker === undefined && this.options[getMarker] !== defaultOptions[getMarker]) {
-				marker = defaultOptions[getMarker](info, scope);
-			}
+			let marker = this.options.getMarker(info, scope);
 
 			if (isHeading) {
 				content = marker + `<a href="#${ id }" class="header-anchor">${ content }</a>`;
