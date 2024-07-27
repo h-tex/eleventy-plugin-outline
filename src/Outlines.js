@@ -83,13 +83,18 @@ export default class Outlines {
 	 */
 	process (content, scope) {
 		// Sections
-		content = content.replaceAll(defRegex, (html, ...args) => {
+		content = content.replaceAll(defRegex, (originalHTML, ...args) => {
 			let groups = match.processGroups(args.at(-1));
 			let {tag, attrs = "", content, level} = groups;
 			let id = attrs.match(idRegex)?.[2];
 			let index = args.at(-3);
-			let info = {id, level, attrs, index, html, content};
+			let info = {id, level, attrs, index, originalHTML, html: originalHTML, content};
 			let isHeading = tag.startsWith("h");
+
+			if (groups.close === undefined && !html.voidElements.has(tag)) {
+				console.warn(`[outline] Unterminated ${ originalHTML } at ${ index } in ${ scope } (${ inputPath })`);
+				return originalHTML;
+			}
 
 			this[scope] ??= new Outline(scope, this.options);
 
@@ -173,17 +178,17 @@ export default class Outlines {
 				return info.html = `<h${level}${attributesToAdd}${attrs}>${content}</h${level}>`;
 			}
 			else {
-				html = html.replace("<" + tag, `$& ${ attributesToAdd }`);
-				html = html.replace(captionRegex, (captionHtml, ...args) => {
-					let groups = match.processGroups(args.at(-1));
-					let {tag: captionTag, attrs: captionAttrs, content: captionContent} = groups;
+				info.html = originalHTML.replace("<" + tag, `$& ${ attributesToAdd }`)
+					.replace(captionRegex, (captionHtml, ...args) => {
+						let groups = match.processGroups(args.at(-1));
+						let {tag: captionTag, attrs: captionAttrs, content: captionContent} = groups;
 
-					captionContent = `<a href="#${ id }" class="label">${ info.label } ${ getNumberHTML(info) }</a>` + captionContent;
+						captionContent = `<a href="#${ id }" class="label">${ info.label } ${ getNumberHTML(info) }</a>` + captionContent;
 
-					return `<${ captionTag }${ captionAttrs }>${ captionContent }</${ captionTag }>`;
-				});
+						return `<${ captionTag }${ captionAttrs }>${ captionContent }</${ captionTag }>`;
+					});
 
-				return info.html = html;
+				return info.html;
 			}
 		});
 
