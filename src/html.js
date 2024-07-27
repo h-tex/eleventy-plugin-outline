@@ -1,7 +1,7 @@
 /**
  * A set of utilities to do what should never be done: parse HTML with regexes.
  */
-import re, { processGroups } from "./re.js";
+import re, { parse, parseAll } from "./re.js";
 
 export const defaults = {
 	tag: "(\\w+:)?[\\w-]+",
@@ -19,6 +19,11 @@ export function attribute ({ name = defaults.attributeName, value = defaults.att
 	return re`\\b(?<name>${ name })=(?<q>["']?)(?<value>${ value })(?=\\k<q>|\\s|>|$)\\k<q>`;
 }
 
+// Elements that don’t need an end tag
+export const voidElements = new Set([
+	"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"
+]);
+
 /**
  * Returns a regular expression that matches an element with the specified criteria.
  * Caveat: element cannot have another element of the same type nested within (yes, you shouldn't parse HTML with regexes)
@@ -34,14 +39,53 @@ export function element ({tag = defaults.tag, attr, attrs = defaults.attrs, cont
 	return re`(?<open><(?<tag>${tag})\\b(?<attrs>${attrs})>)(?:(?<content>${ content })(?<close></\\k<tag>>))?`;
 }
 
-export function parseAll (regex, str) {
-	if (str instanceof RegExp && typeof regex === "string") {
-		[str, regex] = [regex, str];
-	}
+export function parseAttributes (source) {
+	let pattern = attribute();
+	let all = parseAll(pattern, source);
 
-	return [...str.matchAll(regex)].map(({groups}) => processGroups(groups));
+	let ret = Object.fromEntries(all.map(o => [o.name, o.value]));
+	Object.defineProperties(ret, {
+		"__source": {value: source},
+		"toString": {
+			value: function () {
+				return stringifyAttributes(this);
+			}
+		},
+	});
+
+	return ret;
 }
 
-export function parse (regex, str) {
-	return parseAll(regex, str)[0] ?? null;
+export function stringifyAttributes (attributes) {
+	return Object.entries(attributes).map(([name, value]) => {
+		if (value === undefined || value === null) {
+			return "";
+		}
+
+		if (value === true) {
+			return name;
+		}
+
+		if (!value.includes) console.log(attributes)
+
+		let has = {quot: value.includes('"'), apos: value.includes("'")};
+		let q = '"';
+		if (has.quot && has.apos) {
+			// Escape double quotes
+			value = value.replaceAll('"', "&quot;");
+		}
+		else if (has.quot) {
+			q = "'";
+		}
+
+		`${ name }=${q}${ value }${q}`
+	}).join(" ");
+}
+
+export function stringifyElement (element) {
+	let {tag = "div", attributes = {}, attrs = stringifyAttributes(attributes), content = ""} = element;
+	attrs = attrs ? ` ${ attrs }` : "";
+	let ret = `<${ tag }${ attrs }>${ content }</${ tag }>`;
+
+	return ret;
 }

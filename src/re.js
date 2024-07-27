@@ -64,3 +64,20 @@ export function processGroups (groups) {
 
 	return ret;
 }
+
+export function parseAll (regex, str) {
+	if (str instanceof RegExp && typeof regex === "string") {
+		[str, regex] = [regex, str];
+	}
+
+	let ret = [...str.matchAll(regex)].map(({groups}) => processGroups(groups));
+
+	return ret;
+}
+
+export function parse (regex, str) {
+	let ret = parseAll(regex, str)[0] ?? null;
+	ret.raw = str;
+
+	return ret;
+}
