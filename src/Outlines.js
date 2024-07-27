@@ -108,7 +108,7 @@ export default class Outlines {
 					id = slugify(info.text);
 				}
 				else {
-					info.text = content.match(captionRegex)?.groups.content;
+					info.text = content.match(captionRegex)?.groups?.content;
 
 					if (info.text) {
 						// Match first line or until the first period
