@@ -1,5 +1,6 @@
 import Outline from "./Outline.js";
 import Figures from "./Figures.js";
+import { capitalize } from "./util.js";
 
 export default class Heading {
 	// TODO chapter, appendix…
@@ -23,7 +24,7 @@ export default class Heading {
 		Object.defineProperty(this, "options", { value: options, enumerable: false, writable: true });
 
 		this.type ??= this.options.getHeadingType(info) ?? "section";
-		this.label ??= this.options.getHeadingLabel(info) ?? this.type[0].toUpperCase() + this.type.slice(1);
+		this.label ??= this.options.getHeadingLabel(info) ?? capitalize(this.type);
 	}
 
 	get numberSeparator () {

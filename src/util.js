@@ -5,3 +5,7 @@ export function slugify (text) {
 			.trim().replace(/\s+/g, "-") // Convert whitespace to hyphens
 			.toLowerCase();
 }
+
+export function capitalize (text) {
+	return text[0].toUpperCase() + text.slice(1);
+}
