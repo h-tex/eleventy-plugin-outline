@@ -74,9 +74,16 @@ export default class Outlines {
 		(this.scopeToPages[scope] ??= new Set()).add(url);
 
 		// Sections
+		let openIgnoredHeading;
 		content = content.replaceAll(defRegex, (originalHTML, ...args) => {
 			let groups = match.processGroups(args.at(-1));
 			let {tag, attrs = "", content, level} = groups;
+
+			if (openIgnoredHeading?.level > level) {
+				// Once a heading is ignored, all its descendants are also ignored
+				return originalHTML;
+			}
+
 			let attributes = html.parseAttributes(attrs);
 			let id = attributes.id;
 			let index = args.at(-3);
@@ -140,7 +147,10 @@ export default class Outlines {
 			info.id = id;
 			info.originalHTML = originalHTML;
 
-			if (this.options.exclude.call(context, info, scope)) {
+			if (this.options.ignore.call(context, info, scope)) {
+				if (isHeading) {
+					openIgnoredHeading = info;
+				}
 				return originalHTML;
 			}
 

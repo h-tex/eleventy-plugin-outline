@@ -30,7 +30,7 @@ export function getLabel (info) {
 
 }
 
-export function exclude (info, scope) {
+export function ignore (info, scope) {
 	return false;
 }
 
