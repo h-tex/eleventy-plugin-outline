@@ -48,17 +48,5 @@ export default class Outline extends OutlineItems {
 		this.#figureIndex.set(figure.id, figure);
 		return figure;
 	}
-
-	get lastValue () {
-		return [...this.values()].at(-1);
-	}
-
-	get length () {
-		return this.size;
-	}
-
-	toJSON () {
-		return this.slice();
-	}
 }
 

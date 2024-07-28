@@ -6,6 +6,8 @@ import { stringifyElement } from "./html.js";
  */
 export default class OutlineItem {
 	constructor (info, options, parent) {
+		this.spec = info;
+
 		if (info.qualifiedNumber) {
 			// If the number is custom-set, we don’t really have a prefix
 			info.qualifiedNumberPrefix ??= "";
@@ -22,6 +24,7 @@ export default class OutlineItem {
 		}
 
 		Object.defineProperties(this, {
+			spec: { value: info, enumerable: false, writable: true },
 			parent: { value: parent, enumerable: false, writable: true },
 			options: { value: options, enumerable: false, writable: true },
 		});
@@ -52,11 +55,37 @@ export default class OutlineItem {
 		return isRoot ? "" : root.qualifiedNumber + this.numberSeparator;
 	}
 
+	find (callback, options) {
+		let ret = callback(this)
+		if (ret !== undefined) {
+			return ret;
+		}
+
+		return this.children.find(callback, options);
+	}
+
 	toJSON () {
 		return Object.assign({}, this);
 	}
 
 	toString () {
 		return stringifyElement(this);
+	}
+
+	to (changes = {}) {
+		let {spec, transform, filter, options, parent} = changes;
+		spec = Object.assign({}, this.spec, {number: this.number}, spec);
+		let ret = new this.constructor(spec, options ?? this.options, parent ?? this.parent);
+		ret = transform ? transform(ret) : ret;
+
+		if (this.children) {
+			ret.children = this.children.to({parent: ret, transform, filter, options});
+		}
+
+		if (this.figures) {
+			ret.figures = this.figures.to({parent: ret, transform, filter, options});
+		}
+
+		return ret;
 	}
 }

@@ -44,4 +44,34 @@ export default class OutlineItems extends Map {
 
 		return item;
 	}
+
+	get firstValue () {
+		return this.values().next().value;
+	}
+
+	get lastValue () {
+		return [...this.values()].at(-1);
+	}
+
+	get length () {
+		return this.size;
+	}
+
+	toJSON () {
+		return [...this.values()];
+	}
+
+	to (changes = {}) {
+		let {transform, filter, options, parent = this.parent} = changes;
+		let ret = new this.constructor(parent, options ?? this.options);
+
+		for (let item of this.values()) {
+			if (!filter || filter(item)) {
+				let newItem = item.to({parent: ret, transform, filter, options});
+				ret.set(newItem.id, newItem);
+			}
+		}
+
+		return ret;
+	}
 }
