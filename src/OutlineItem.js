@@ -5,6 +5,8 @@ import { stringifyElement } from "./html.js";
  * @abstract
  */
 export default class OutlineItem {
+	kind = "item";
+
 	constructor (info, options, parent) {
 		this.spec = info;
 

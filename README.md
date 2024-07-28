@@ -4,7 +4,7 @@ This plugin is the swiss army knife when it comes to creating outlines in Eleven
 
 Features include:
 - ✅ Numbering of headings and figures
-- ✅ Render an outline for a whole document or just a page, using your own template
+- ✅ Render an outline for a whole document or just a page, using your _own_ template
 - ✅ Create cross-references to sections, figures, tables, etc.
 - ✅ Works for both Markdown and HTML content
 - ✅ Adds ids to headings if they don’t exist, respects them if they do exist.
@@ -33,19 +33,26 @@ you can use a scope argument:
 > [!WARNING]
 > Ids need to be unique within a scope.
 > If they are not, they will be rewritten to be unique (and produce a warning),
-> and any ids generated will also be unique within the scope.
+> Any ids generated are also unique within the scope.
 
-Once content is processed, you can read the `outline` global data object to render an outline for the current URL,
-or `outline[scope]` for a specific scope.
+Once content is processed, you can read ~~the `outline` global data object~~ _(TODO)_ `outlines[scope]` to render an outline for a specific scope.
+If you did not specify a scope, it defaults to `page.url` so `outlines[page.url]` will contain the outline for the current page.
 
-**When you have at most one scope per page,
-cross-references will be processed automatically.**
+> [!WARNING]
+> This will only include outlines for content that has gone through the `outline` filter at the time of rendering.
+
+When you have at most one scope per page,
+**cross-references will be processed automatically** via an 11ty transform.
 However, when you have multiple scopes within the same page,
 we can’t know which references belong to which scope, so you need to process them manually with the `xrefs` filter:
 
 ```njk
 {{ content | xrefs(scope) | safe }}
 ```
+
+> [!WARNING]
+> Cross-references to other files (for scopes that span multiple files) are not yet processed,
+> but this is a high-priority planned feature.
 
 ## Syntax
 
@@ -124,31 +131,53 @@ You can also use a raw `<table>` with a `<caption>`:
 The outline data structure the plugin builds has the following general structure:
 
 ```ts
-class Outline extends Array<Heading> {
+class OutlineItems extends Map<string, OutlineItem> {
+	parent: OutlineItem;
+	options: object;
+	countsByType: Map<string, number>;
 
+	get root ();
+
+	get numberSeparator ();
+
+	get qualifiedNumber ();
+
+	get firstValue ();
+
+	get lastValue ();
 }
 
-class Heading {
+class OutlineItem {
+	parent: OutlineItems;
+	options: object;
+
+	// Each subclass defines this to a distinct value
+	// e.g. "heading" or "figure"
+	kind: string;
+
+	// Subtype, e.g. "chapter" or "appendix"
+	type: string;
+
 	id: string;
 
 	// Iff the id was rewritten to be unique, this will contain the original
 	originalId: string;
 
-	// The heading level (1-6)
-	level: number;
-
 	// HTML attributes as a string. This includes id.
 	attrs: string;
 
-	// The original HTML content of the heading
+	// The original HTML content of the element
 	content: string;
 
-	// The trimmed text content of the heading
-	// With all elements stripped off
+	// The trimmed text content of with all elements stripped off
+	// For figures, this is the caption text
 	text: string;
 
-	// The full HTML of the heading
+	// The full rendered HTML of the element
 	html: string;
+
+	// The original HTML of the element that was parsed
+	originalHTML: string;
 
 	// This section’s number (without parent numbers)
 	// E.g. for section 1.2.3, this would be 3
@@ -171,6 +200,18 @@ class Heading {
 
 	// The page URL (e.g. "/foo/")
 	url: string;
+}
+
+class Outline extends OutlineItems {
+	// Will return this if it contains more than one top-level section
+	// or the only top-level section if there is only one.
+	// This is mainly useful for displaying tables of contents.
+	get toc();
+}
+
+class Heading extends OutlineItem {
+	// The heading level (1-6)
+	level: number;
 
 	// Child headings
 	children: Outline;
@@ -179,43 +220,14 @@ class Heading {
 	figures: Figures;
 }
 
-class Figures extends Map<string, Figure> {
+class Figures extends OutlineItems {
 
 }
 
-class Figure {
-	id: string;
+class Figure extends OutlineItem {
 
-	// Iff the id was rewritten to be unique, this will contain the original
-	originalId: string;
-
-	// HTML attributes as a string. This includes id.
-	attrs: string;
-
-	// The original HTML content of the figure
-	content: string;
-
-	// The trimmed text content of the figure
-	// With all elements stripped off
-	text: string;
-
-	// The full HTML of the figure
-	html: string;
-
-	index: number;
-
-	// The page input path (e.g. "foo/index.md")
-	inputPath: string;
-
-	// The page output path (e.g. "foo/index.html")
-	outputPath: string;
-
-	// The page URL
-	url: string;
 }
 ```
-
-
 
 ## Installation
 
@@ -232,8 +244,13 @@ import outline from 'eleventy-plugin-outline';
 and add it to your Eleventy config:
 
 ```js
-eleventyConfig.addPlugin(outline);
+eleventyConfig.addPlugin(outline, {
+	// Options
+});
 ```
+
+You can provide options to customize behavior.
+For details on the options available, check out the [default options](src/defaultOptions.js).
 
 if you have any plugins generating ids, make sure they are included before this one.
 
