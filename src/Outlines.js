@@ -120,7 +120,7 @@ export default class Outlines {
 				id += "-" + i;
 
 				if (info.originalId) {
-					console.log(`[outline] Duplicate id: ${ info.originalId } → ${ id } in ${ scope }`);
+					console.warn(`[outline] Duplicate id: ${ info.originalId } → ${ id } in ${ scope }`);
 				}
 			}
 
