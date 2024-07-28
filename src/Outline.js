@@ -9,6 +9,19 @@ export default class Outline extends OutlineItems {
 	static of = Heading;
 
 	/**
+	 * Will return this if it contains more than one top-level section
+	 * or the only top-level section if there is only one.
+	 * This is mainly useful for displaying tables of contents.
+	 */
+	get toc () {
+		if (this.size === 1) {
+			return this.firstValue.children;
+		}
+
+		return this;
+	}
+
+	/**
 	 * Get a figure or heading that corresponds to the given id
 	 * @param {string} id
 	 * @returns {Heading | Figure}

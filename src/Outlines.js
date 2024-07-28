@@ -69,7 +69,7 @@ export default class Outlines {
 	 */
 	process (content, scope, context) {
 		let {inputPath, outputPath, url} = context?.page ?? {};
-		scope ??= url ?? "";
+		scope = (scope === true ? undefined : scope) ?? url ?? "";
 		(this.pageToScopes[url] ??= new Set()).add(scope);
 		(this.scopeToPages[scope] ??= new Set()).add(url);
 
@@ -178,11 +178,13 @@ export default class Outlines {
 	}
 
 	/**
-	 * Get the outline associated with the current scope
+	 * Get the outline associated with a given scope or page
 	 * @param {*} scope
 	 * @returns {Outline | null} The outline if exactly one exists, otherwise null.
 	 */
 	get (scope, page) {
+		scope = scope === true ? undefined : scope;
+
 		if (!scope) {
 			// If no scope provided, check if page is associated with exactly one
 			let pageScopes = this.pageToScopes[page.url];
@@ -194,6 +196,10 @@ export default class Outlines {
 			}
 
 			scope = pageScopes.values().next().value;
+		}
+		else if (page && this[scope]) {
+			// Both scope and page, need to filter
+			return this[scope].to({filter: item => !item || item.url === page.url});
 		}
 
 		return this[scope] ?? null;
