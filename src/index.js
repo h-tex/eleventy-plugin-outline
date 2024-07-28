@@ -30,3 +30,9 @@ export default function (config, options) {
 
 export { Outlines };
 export { default as Outline } from "./Outline.js";
+export { default as OutlineItem } from "./OutlineItem.js";
+export { default as OutlineItems } from "./OutlineItems.js";
+export { default as Figure } from "./Figure.js";
+export { default as Figures } from "./Figures.js";
+export { default as Heading } from "./Heading.js";
+export * as html from "./html.js";
