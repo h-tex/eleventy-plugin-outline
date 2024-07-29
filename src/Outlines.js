@@ -1,14 +1,20 @@
 import Outline from "./Outline.js";
-import re, * as match from "./re.js";
+import re, { processGroups } from "./re.js";
 import * as html from "./html.js";
-import {slugify} from "./util.js";
+import {
+	slugify,
+	rebase_url,
+	get_path,
+	get_hash,
+} from "./util.js";
 import * as defaultOptions from "./defaultOptions.js";
 
 const headingRegex = html.element({tag: "h(?<level>[1-6])"});
 const figRegex = html.element({tag: "figure|table"});
 const captionRegex = html.element({tag: "figcaption"});
 const defRegex = re`${figRegex}|${headingRegex}`;
-const refRegex = html.element({tag: "a", attr: {name: "href", value: "#[\\w:-]+?"}, content: ""});
+const emptyLink = html.element({tag: "a", content: ""});
+const hrefRegex = html.attribute({name: "href"});
 
 const attributesToProperties = {
 	"data-number": "qualifiedNumber",
@@ -76,7 +82,7 @@ export default class Outlines {
 		// Sections
 		let openIgnoredHeading;
 		content = content.replaceAll(defRegex, (originalHTML, ...args) => {
-			let groups = match.processGroups(args.at(-1));
+			let groups = processGroups(args.at(-1));
 			let {tag, attrs = "", content, level} = groups;
 
 			if (openIgnoredHeading?.level > level) {
@@ -167,7 +173,7 @@ export default class Outlines {
 			}
 			else {
 				content = content.replace(captionRegex, (captionHtml, ...args) => {
-					let caption = match.processGroups(args.at(-1));
+					let caption = processGroups(args.at(-1));
 					info.caption = caption;
 					caption.originalHTML = captionHtml;
 
@@ -222,23 +228,57 @@ export default class Outlines {
 	 * @returns {string} The updated content
 	 */
 	resolveXRefs (content, scope, context) {
-		let outline = this.get(scope, context?.page);
+		let page = context?.page;
+		let outline = this.get(scope, page);
 
 		if (!outline) {
 			return content;
 		}
 
-		content = content.replaceAll(refRegex, (match, ...args) => {
-			let groups = args.at(-1);
-			let id = groups.value.slice(1);
-			let info = outline.getById(id);
+		let url = page?.url; // The URL of the referencing page
+		let urls = outline.urls; // URLs in this outline
+
+		content = content.replaceAll(emptyLink, (match, ...args) => {
+			let groups = processGroups(args.at(-1));
+			let info, href;
+
+			let open = groups.open.replace(hrefRegex, (match, ...args) => {
+				let groups = processGroups(args.at(-1));
+				href = groups.value;
+
+				if (href.startsWith("#")) {
+					let id = groups.value.slice(1);
+					info = outline.getById(id);
+				}
+				else if (urls) {
+					// Link to another file, do we know this file?
+					let rootRelative = "/" + rebase_url(href, url, "/");
+					let rootPath = get_path(rootRelative);
+					let hash = get_hash(href);
+					let headings = urls.get(rootPath) ?? urls.get(rootPath + "/");
+
+					if (headings) {
+						let firstHeading = headings.values().next().value;
+
+						if (hash) {
+							let id = hash.slice(1);
+							info = firstHeading.getById(id);
+						}
+
+						// If hash not found, we still want to return firstHeading
+						info ??= firstHeading;
+					}
+				}
+
+				return match;
+			});
 
 			if (!info) {
 				// Not found
 				return match;
 			}
 
-			return groups.open + info.label + " " + info.qualifiedNumber + groups.close;
+			return open + info.label + " " + info.qualifiedNumber + groups.close;
 		});
 
 		return content;

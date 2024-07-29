@@ -15,6 +15,14 @@ export default class Heading extends OutlineItem {
 		}
 	}
 
+	getById (id) {
+		if (this.id === id) {
+			return this;
+		}
+
+		return this.children?.getById(id) ?? this.figures?.getById(id);
+	}
+
 	find (test, {descendIf} = {}) {
 		if (typeof test === "function") {
 			if (test(this) !== undefined) {

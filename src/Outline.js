@@ -8,6 +8,8 @@ export default class Outline extends OutlineItems {
 	#figureIndex = new Map();
 	static of = Heading;
 
+	urls = new Map();
+
 	/**
 	 * Will return this if it contains more than one top-level section
 	 * or the only top-level section if there is only one.
@@ -40,6 +42,12 @@ export default class Outline extends OutlineItems {
 		else {
 			// This is a top-level section
 			heading = super.add(heading);
+		}
+
+		if (heading.url && this.parent?.url !== heading.url) {
+			let urls = this.urls.get(heading.url) ?? [];
+			urls.push(heading);
+			this.urls.set(heading.url, urls);
 		}
 
 		this.#index.set(heading.id, heading);
