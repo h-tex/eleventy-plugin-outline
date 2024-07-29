@@ -4,7 +4,10 @@ export default function (config, options) {
 	const outlines = new Outlines(options);
 
 	config.addGlobalData("outlines", outlines);
+	let eleventyComputed = config.globalData.eleventyComputed ?? {};
+
 	config.addGlobalData("eleventyComputed", {
+		...eleventyComputed,
 		outline (data) {
 			let ret = outlines.get(undefined, data.page);
 
