@@ -1,6 +1,6 @@
 {
   "name": "eleventy-plugin-outline",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "This plugin is the swiss army knife when it comes to creating outlines in Eleventy, but it’s also quite opinionated in how it does things. It affords customization via extensibility, rather than configuration.",
   "main": "src/index.js",
   "type": "module",
