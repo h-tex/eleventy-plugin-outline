@@ -8,7 +8,7 @@ const headingRegex = html.element({tag: "h(?<level>[1-6])"});
 const figRegex = html.element({tag: "figure|table"});
 const captionRegex = html.element({tag: "figcaption"});
 const defRegex = re`${figRegex}|${headingRegex}`;
-const refRegex = html.element({tag: "a", attr: {name: "href", value: "#.+?"}, content: ""});
+const refRegex = html.element({tag: "a", attr: {name: "href", value: "#[\\w:-]+?"}, content: ""});
 
 const attributesToProperties = {
 	"data-number": "qualifiedNumber",
