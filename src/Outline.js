@@ -3,9 +3,6 @@ import Figures from "./Figures.js";
 import OutlineItems from "./OutlineItems.js";
 
 export default class Outline extends OutlineItems {
-	// Flat maps of id to object
-	#index = new Map();
-	#figureIndex = new Map();
 	static of = Heading;
 
 	urls = new Map();
@@ -23,51 +20,37 @@ export default class Outline extends OutlineItems {
 		return this;
 	}
 
-	/**
-	 * Get a figure or heading that corresponds to the given id
-	 * @param {string} id
-	 * @returns {Heading | Figure}
-	 */
-	getById (id) {
-		return this.#index.get(id) ?? this.#figureIndex.get(id);
-	}
-
-	add (heading) {
+	add (item) {
 		let last = this.lastValue; // possibly ancestor
 
-		if (last && heading.level > last.level) {
+		// Add to last if either it's a heading with a higher level or it's a figure (no level)
+		let isFigure = !item.level;
+		let addToLast = last && (isFigure || item.level > last.level);
+
+		if (addToLast) {
 			// This is a child
-			heading = last.add(heading);
+			item = last.add(item);
 		}
 		else {
 			// This is a top-level section
-			heading = super.add(heading);
+			if (isFigure) {
+				this.figures ??= new Figures(this);
+				item = this.figures.add(item);
+			}
+			else {
+				item = super.add(item);
+			}
 		}
 
-		if (heading.url && this.parent?.url !== heading.url) {
-			let urls = this.urls.get(heading.url) ?? [];
-			urls.push(heading);
-			this.urls.set(heading.url, urls);
+		if (item.url && this.parent?.url !== item.url) {
+			let urls = this.urls.get(item.url) ?? [];
+			urls.push(item);
+			this.urls.set(item.url, urls);
 		}
 
-		this.#index.set(heading.id, heading);
+		this.index.set(item.id, item);
 
-		return heading;
-	}
-
-	addFigure (figure) {
-		let last = this.lastValue;
-
-		if (last) {
-			figure = last.addFigure(figure);
-		}
-		else {
-			this.figures ??= new Figures(this);
-			figure = this.figures.add(figure);
-		}
-
-		this.#figureIndex.set(figure.id, figure);
-		return figure;
+		return item;
 	}
 }
 

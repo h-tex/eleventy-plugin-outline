@@ -7,8 +7,12 @@ import { stringifyElement } from "./html.js";
 export default class OutlineItem {
 	kind = "item";
 
+	// Flat maps of id to object
+	index = new Map();
+
 	constructor (info, options, parent) {
 		this.spec = info;
+		this.index = new Map();
 
 		if (info.qualifiedNumber) {
 			// If the number is custom-set, we don’t really have a prefix
@@ -57,6 +61,16 @@ export default class OutlineItem {
 		return isRoot ? "" : root.qualifiedNumber + this.numberSeparator;
 	}
 
+	/**
+	 * Get an item corresponds to the given id
+	 * regardless of how deeply nested it might be
+	 * @param {string} id
+	 * @returns {Heading | Figure}
+	 */
+	getById (id) {
+		return this.index.get(id);
+	}
+
 	find (callback, options) {
 		let ret = callback(this)
 		if (ret !== undefined) {
@@ -89,5 +103,9 @@ export default class OutlineItem {
 		}
 
 		return ret;
+	}
+
+	add (item) {
+		this.index.set(item.id, item);
 	}
 }

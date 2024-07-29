@@ -44,13 +44,19 @@ export default class Heading extends OutlineItem {
 		}
 	}
 
-	add (child) {
-		this.children ??= new Outline(this, this.options);
-		return this.children.add(child);
-	}
+	add (item) {
+		let list;
+		if (item.level) {
+			// Is heading
+			list = this.children ??= new Outline(this, this.options);
+		}
+		else {
+			list = this.figures ??= new Figures(this, this.options);
+		}
 
-	addFigure (figure) {
-		this.figures ??= new Figures(this, this.options);
-		return this.figures.add(figure);
+		item = list.add(item);
+
+		this.index.set(item.id, item);
+		return item;
 	}
 }

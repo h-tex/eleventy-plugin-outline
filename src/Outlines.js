@@ -92,9 +92,16 @@ export default class Outlines {
 
 			let attributes = html.parseAttributes(attrs);
 			let id = attributes.id;
-			let index = args.at(-3);
-			let info = {id, level: level ? Number(level) : undefined, tag, attrs, attributes, index, html: originalHTML, content, inputPath, outputPath, url};
+			let start = args.at(-3);
+			let info = {
+				id, level: level ? Number(level) : undefined,
+				tag, attrs, attributes, start,
+				html: originalHTML,
+				content, inputPath, outputPath, url
+			};
+
 			let isHeading = tag.startsWith("h");
+			info.kind = isHeading ? "section" : "figure";
 
 			let outline = this[scope] ??= new Outline(null, this.options);
 
@@ -160,8 +167,7 @@ export default class Outlines {
 				return originalHTML;
 			}
 
-			let add = isHeading ? "add" : "addFigure";
-			info = outline[add](info);
+			info = outline.add(info);
 
 			attributes["data-number"] ??= info.qualifiedNumber;
 			attributes["data-label"] ??= info.label;

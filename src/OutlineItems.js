@@ -1,4 +1,7 @@
 export default class OutlineItems extends Map {
+	// Flat maps of id to object
+	index = new Map();
+
 	constructor (parent, options = parent?.options) {
 		super();
 
@@ -21,6 +24,16 @@ export default class OutlineItems extends Map {
 		return this.parent?.qualifiedNumber ?? "";
 	}
 
+	/**
+	 * Get an item corresponds to the given id
+	 * regardless of how deeply nested it might be
+	 * @param {string} id
+	 * @returns {Heading | Figure}
+	 */
+	getById (id) {
+		return this.index.get(id);
+	}
+
 	find (callback, options) {
 		for (let item of this) {
 			let ret = item.find(callback, options);
@@ -41,6 +54,7 @@ export default class OutlineItems extends Map {
 
 		this.delete(info.id); // This should not exist anyway
 		this.set(item.id, item);
+		this.index.set(item.id, item);
 
 		return item;
 	}
