@@ -274,6 +274,8 @@ export default class Outlines {
 						// If hash not found, we still want to return firstHeading
 						info ??= firstHeading;
 					}
+
+					// TODO if page URL is different, rewrite href too
 				}
 
 				return match;

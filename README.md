@@ -4,11 +4,15 @@ This plugin is the swiss army knife when it comes to creating outlines in Eleven
 
 Features include:
 - ✅ Numbering of headings and figures
-- ✅ Render an outline for a whole document or just a page, using your _own_ template
+- ✅ Render an outline using your _own_ actual template
 - ✅ Create cross-references to sections, figures, tables, etc.
-- ✅ Works for both Markdown and HTML content
-- ✅ Adds ids to headings if they don’t exist, respects them if they do exist.
+- ✅ Works for both Markdown and HTML content. Will even pick up HTML headings in Markdown documents correctly.
+- ✅ Adds ids to headings if they don’t exist, respects them if they do exist (but auto-resolves duplicates).
 - ✅ Warns about heading jumps (e.g. going from `<h1>` to `<h3>` without an `<h2>`)
+- ✅ Custom outline scopes allow you to create outlines that span multiple files (e.g. chapters in a book), or have multiple outlines within the same file
+- ✅ Yes, cross-file cross-references do actually work! (for outlines that span multiple files)
+- ✅ Customizable options for numbering, cross-references, and more
+
 
 ## Usage
 
@@ -60,6 +64,7 @@ we can’t know which references belong to which scope, so you need to process t
 
 The plugin tries to introduce as little syntax as possible.
 References are simply empty links, e.g. `[](#fig:myfigure)` in Markdown or `<a href="#my-section-id"></a>` in HTML.
+Even cross-references across files (for outlines that span multiple files) are just `[](/path/to/file/#my-section-id)`.
 
 ### Sections
 
@@ -126,9 +131,27 @@ You can also use a raw `<table>` with a `<caption>`:
 </table>
 ```
 
-## Data structure
+## Specifying data explicitly
 
-The outline data structure the plugin builds has the following general structure:
+Sometimes you may want to specify data explicitly.
+For example, for outlines that span multiple files, you have no control over the order the files are processed in,
+so you’ll end up with non-deterministic top-level numbers!
+
+Or, if you are combining content from multiple files into a single file,
+cross-file references to the original files won't work correctly,
+because all this plugin can see is the URL of the current page.
+
+To explicitly override things, you can use `data-*` attributes on your headings:
+- `data-number` to override the generated `qualifiedNumber`
+- `data-label` to override the label
+- `data-url` to override the page URL
+
+## Data structures
+
+The `outlines` global data is an `Outlines` object,
+and each actual outline is an `Outline` object.
+
+These objects have the structure below:
 
 ```ts
 class OutlineItems extends Map<string, OutlineItem> {

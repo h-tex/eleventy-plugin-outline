@@ -10,6 +10,10 @@ export default class Heading extends OutlineItem {
 	constructor (info, options, parent) {
 		super(info, options, parent);
 
+		if (info.attributes["data-url"]) {
+			this.url = info.attributes["data-url"];
+		}
+
 		if (this.parent?.level && this.parent.level < this.level - 1) {
 			console.warn(`[outline] Level jump in ${this.url}: From ${this.parent} to ${this}`);
 		}
