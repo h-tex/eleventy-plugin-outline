@@ -2,25 +2,25 @@
 
 export function getType (info) {
 	if (info.kind === "figure") {
-		if (/^fig(ure)?[:-]/.test(figure.id)) {
+		if (/^fig(ure)?[:-]/.test(info.id)) {
 			// Early exit to avoid heuristics messing things up
 			return "figure";
 		}
 
-		if (/^tab(le)?[:-]/.test(figure.id)) {
+		if (/^tab(le)?[:-]/.test(info.id)) {
 			return "table";
 		}
 
-		if (/^eq(uation)?[:-]/.test(figure.id)) {
+		if (/^eq(uation)?[:-]/.test(info.id)) {
 			return "equation";
 		}
 
 		// No prefix, need to look at content
-		if (figure.html.includes("<table")) {
+		if (info.html.includes("<table")) {
 			return "table";
 		}
 
-		if (figure.html.includes(figure.html.includes("<math") || figure.html.includes("<mjx-container"))) {
+		if (info.html.includes(info.html.includes("<math") || info.html.includes("<mjx-container"))) {
 			return "equation";
 		}
 	}
