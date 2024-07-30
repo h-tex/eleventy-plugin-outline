@@ -193,7 +193,7 @@ export default class Outlines {
 			}
 
 			info.processedContent = content;
-			info.html = html.stringifyElement(info);
+			info.html = html.stringifyElement({tag, attributes, content});
 
 			if (this.options.transform) {
 				info.html = this.options.transform?.call(context, info, scope) ?? info.html;
