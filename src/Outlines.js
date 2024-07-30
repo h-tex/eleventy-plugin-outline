@@ -96,8 +96,9 @@ export default class Outlines {
 			let info = {
 				id, level: level ? Number(level) : undefined,
 				tag, attrs, attributes, start,
-				html: originalHTML,
-				content, inputPath, outputPath, url
+				html, html: originalHTML,
+				content,
+				inputPath, outputPath, url
 			};
 
 			let isHeading = tag.startsWith("h");
@@ -191,11 +192,12 @@ export default class Outlines {
 				});
 			}
 
-			if (this.options.transform) {
-				this.options.transform?.call(context, info, scope);
-			}
-
+			info.processedContent = content;
 			info.html = html.stringifyElement(info);
+
+			if (this.options.transform) {
+				info.html = this.options.transform?.call(context, info, scope) ?? info.html;
+			}
 
 			return info.html;
 		});

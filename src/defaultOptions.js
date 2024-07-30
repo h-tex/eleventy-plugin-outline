@@ -46,6 +46,6 @@ export function getMarker (info) {
 }
 
 /**
- * Modify the element info before it is reserialized
+ * Modify the element info after it is reserialized
  */
 export function transform(info, scope) {}
