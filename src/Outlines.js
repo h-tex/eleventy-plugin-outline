@@ -31,7 +31,7 @@ export default class Outlines {
 			this.options[key] = function (...args) {
 				let ret = options[key].call(this, ...args);
 
-				if (ret === undefined) {
+				if (ret === undefined && defaultOptions[key]) {
 					return defaultOptions[key].call(this, ...args);
 				}
 
@@ -191,7 +191,11 @@ export default class Outlines {
 				});
 			}
 
-			info.html = html.stringifyElement({tag, attributes, content});
+			if (this.options.transform) {
+				this.options.transform?.call(context, info, scope);
+			}
+
+			info.html = html.stringifyElement(info);
 
 			return info.html;
 		});

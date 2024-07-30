@@ -44,3 +44,8 @@ export function getMarker (info) {
 		return `<a href="#${ info.id }" class="label">${ info.label } <span class="outline-number">${ info.qualifiedNumberPrefix ?? "" }${ thisNumber }</span></a>`;
 	}
 }
+
+/**
+ * Modify the element info before it is reserialized
+ */
+export function transform(info, scope) {}

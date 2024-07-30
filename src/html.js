@@ -87,7 +87,7 @@ export function stringifyAttributes (attributes) {
 }
 
 export function stringifyElement (element) {
-	let {tag = "div", attributes, attrs = stringifyAttributes(attributes), content = ""} = element;
+	let {tag = "div", attributes, attrs, content = ""} = element;
 
 	if (attributes) {
 		attrs = stringifyAttributes(attributes);
