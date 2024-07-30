@@ -85,7 +85,7 @@ export default class Outlines {
 			let groups = processGroups(args.at(-1));
 			let {tag, attrs = "", content, level} = groups;
 
-			if (openIgnoredHeading?.level > level) {
+			if (openIgnoredHeading && (openIgnoredHeading.level > level || !level)) {
 				// Once a heading is ignored, all its descendants are also ignored
 				return originalHTML;
 			}
