@@ -297,4 +297,19 @@ export default class Outlines {
 
 		return content;
 	}
+
+	clear ({url}) {
+		if (this[url] instanceof Outline) {
+			delete this[url];
+		}
+		else {
+			let scopes = this.pageToScopes[url];
+
+			if (scopes) {
+				for (let scope of scopes) {
+					delete this[scope];
+				}
+			}
+		}
+	}
 }

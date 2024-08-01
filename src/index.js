@@ -29,6 +29,23 @@ export default function (config, options) {
 	config.addFilter("xrefs", function (content, scope) {
 		return outlines.resolveXRefs(content, scope, this);
 	});
+
+	let inputPathToUrl;
+	config.on("eleventy.contentMap", ({inputPathToUrl: newInputPathToUrl}) => {
+		inputPathToUrl = newInputPathToUrl;
+	});
+
+	// Run me before --watch or --serve re-runs
+	config.on("eleventy.beforeWatch", async (changedFiles) => {
+		if (!inputPathToUrl) {
+			return;
+		}
+
+		for (let inputPath of changedFiles) {
+			let url = inputPathToUrl[inputPath];
+			outlines.clear({url});
+		}
+	});
 }
 
 export { Outlines };
