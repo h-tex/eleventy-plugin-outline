@@ -17,7 +17,7 @@ export default function (config, options) {
 
 	// Pick up figures and headings
 	config.addFilter("outline", function (content, scope) {
-		return outlines.process(content, scope, this);
+		return outlines.processHTML(content, scope, this.page);
 	});
 
 	// Replace empty xref links with labels like "Figure 3.2"
@@ -27,7 +27,7 @@ export default function (config, options) {
 
 	// For control over scope
 	config.addFilter("xrefs", function (content, scope) {
-		return outlines.resolveXRefs(content, scope, this);
+		return outlines.resolveXRefs(content, scope, this.page);
 	});
 
 	let inputPathToUrl;
