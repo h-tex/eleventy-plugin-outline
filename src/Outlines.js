@@ -197,7 +197,7 @@ export default class Outlines {
 			}
 
 			if (isHeading) {
-				content = info.marker + `<a href="#${ id }" class="header-anchor">${ content }</a>`;
+				content = info.marker + `<a href="#${ attributes.id }" class="header-anchor">${ content }</a>`;
 			}
 			else {
 				content = content.replace(captionRegex, (captionHtml, ...args) => {
