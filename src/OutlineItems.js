@@ -1,4 +1,6 @@
-export default class OutlineItems extends Map {
+import BetterMap from "./BetterMap.js";
+
+export default class OutlineItems extends BetterMap {
 	// Flat maps of id to object
 	index = new Map();
 
@@ -50,25 +52,26 @@ export default class OutlineItems extends Map {
 		let item = new this.constructor.of(info, this.options, this.parent);
 
 		this.countsByType[item.type] ??= 0;
+		let customNumber = item.number !== undefined;
 		item.number ??= ++this.countsByType[item.type];
 
 		this.delete(info.id); // This should not exist anyway
-		this.set(item.id, item);
+		if (customNumber) {
+			// Insert at the right place
+			this.setSorted(item.id, item, (a, b) => {
+				[a, b] = [a[1], b[1]];
+				let ret = a.number - b.number;
+
+				return isNaN(ret) ? a.number.localeCompare(b.number) : ret;
+			});
+		}
+		else {
+			this.set(item.id, item);
+		}
+
 		this.index.set(item.id, item);
 
 		return item;
-	}
-
-	get firstValue () {
-		return this.values().next().value;
-	}
-
-	get lastValue () {
-		return [...this.values()].at(-1);
-	}
-
-	get length () {
-		return this.size;
 	}
 
 	toJSON () {
