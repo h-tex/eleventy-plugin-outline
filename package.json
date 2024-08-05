@@ -21,6 +21,9 @@
     "url": "https://github.com/leaverou/eleventy-plugin-outline/issues"
   },
   "homepage": "https://github.com/leaverou/eleventy-plugin-outline#readme",
+  "peerDependencies": {
+    "@11ty/eleventy": "^3.0.0-beta.1"
+  },
   "devDependencies": {
     "release-it": "^17.5.0"
   }
