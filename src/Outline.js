@@ -8,15 +8,6 @@ export default class Outline extends OutlineItems {
 	urls = new Map();
 	pageURLs = new Map();
 
-	/**
-	 * Will return this if it contains more than one top-level section
-	 * or the only top-level section if there is only one.
-	 * This is mainly useful for displaying tables of contents.
-	 */
-	get toc () {
-		return this.size === 1 ? this.firstValue.children : this;
-	}
-
 	get level () {
 		return 1 + (this.parent?.level ?? 0);
 	}
