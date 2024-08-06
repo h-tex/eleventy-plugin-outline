@@ -18,6 +18,10 @@ export default class OutlineItems extends BetterMap {
 		return this.parent ? this.parent.root : this;
 	}
 
+	get progressRoot () {
+		return !this.parent || this.isProgressRoot ? this : this.parent.progressRoot;
+	}
+
 	get numberSeparator () {
 		return this.options.getSeparator?.(this) ?? ".";
 	}
@@ -52,7 +56,7 @@ export default class OutlineItems extends BetterMap {
 		let item = new this.constructor.of(info, this.options, this);
 
 		this.countsByType[item.type] ??= 0;
-		let customNumber = item.number !== undefined;
+
 		item.number ??= ++this.countsByType[item.type];
 
 		this.delete(info.id); // This should not exist anyway

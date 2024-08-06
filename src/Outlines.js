@@ -77,7 +77,7 @@ export default class Outlines {
 		let isHeading = info.tag.startsWith("h");
 		info.kind = isHeading ? "section" : "figure";
 
-		let outline = this[scope] ??= new Outline(null, this.options);
+		let outline = this[scope];
 
 		if (id) {
 			info.originalId = id;
@@ -160,10 +160,22 @@ export default class Outlines {
 		(this.pageToScopes[url] ??= new Set()).add(scope);
 		(this.scopeToPages[scope] ??= new Set()).add(url);
 
+		if (!this[scope]) {
+			let options = Object.create(this.options);
+			options.scope = scope;
+			this[scope] = new Outline(null, this.options);
+			this[scope].start = 0;
+			this[scope].end = 0;
+		}
+
 		// Sections
 		let openIgnoredHeading;
+		let originalContent = content;
+		let lastHeading;
 		content = content.replaceAll(defRegex, (originalHTML, ...args) => {
 			let groups = processGroups(args.at(-1));
+			let index = args.at(-3);
+
 			let {tag, attrs = "", content, level} = groups;
 
 			if (openIgnoredHeading && (openIgnoredHeading.level > level || !level)) {
@@ -179,6 +191,7 @@ export default class Outlines {
 				tag, attributes, start,
 				html: originalHTML, originalHTML,
 				content,
+				start: this[scope].end + index,
 				inputPath, outputPath, url
 			};
 
@@ -198,6 +211,7 @@ export default class Outlines {
 
 			if (isHeading) {
 				content = info.marker + `<a href="#${ attributes.id }" class="header-anchor">${ content }</a>`;
+				lastHeading = info;
 			}
 			else {
 				content = content.replace(captionRegex, (captionHtml, ...args) => {
@@ -222,6 +236,9 @@ export default class Outlines {
 
 			return info.html;
 		});
+
+		let length = originalContent.length;
+		this[scope].setEnd((this[scope].end ?? 0) + length);
 
 		return content;
 	}

@@ -12,6 +12,11 @@ export default class Heading extends OutlineItem {
 
 		if (info.attributes["data-url"]) {
 			this.url = info.attributes["data-url"];
+
+			if (this.url !== this.parent.url) {
+				// Commenting or uncommenting this changes which outline is correct lol
+				this.isProgressRoot = true;
+			}
 		}
 
 		if (this.parent?.level && this.parent.level < this.level - 1) {
@@ -66,5 +71,32 @@ export default class Heading extends OutlineItem {
 
 		this.index.set(item.id, item);
 		return item;
+	}
+
+
+
+	get progressRoot () {
+		return !this.parent || this.isProgressRoot ? this : this.parent.progressRoot;
+	}
+
+	get progress () {
+		let progressRoot = this.progressRoot;
+		let rootEnd = progressRoot.end ?? progressRoot.parent?.end;
+
+		let totalLength = progressRoot.end - progressRoot.start;
+		let start = this.start - progressRoot.start;
+
+		// if (isNaN(length)) {
+		// 	console.log(this.level, progressRoot.level, progressRoot.start, progressRoot.end);
+		// 	return "?"
+		// }
+
+		return start +"/"+ totalLength;
+	}
+
+	setEnd (end) {
+		// console.log(this.scope, "Setting end", this.id, end);
+		this.end = end;
+		this.children?.setEnd(end);
 	}
 }

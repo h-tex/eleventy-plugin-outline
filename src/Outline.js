@@ -13,11 +13,23 @@ export default class Outline extends OutlineItems {
 	 * This is mainly useful for displaying tables of contents.
 	 */
 	get toc () {
-		if (this.size === 1) {
-			return this.firstValue.children;
-		}
+		return this.size === 1 ? this.firstValue.children : this;
+	}
 
-		return this;
+	get level () {
+		return 1 + (this.parent?.level ?? 0);
+	}
+
+	sort (
+		compareFunction = (a, b) => {
+			[a, b] = [a[1], b[1]];
+			let ret = a.number - b.number;
+
+			return isNaN(ret) ? a.number.localeCompare(b.number) : ret;
+		}
+	) {
+		super.sort(compareFunction);
+		this.needsSorting = false;
 	}
 
 	add (item) {
@@ -38,6 +50,10 @@ export default class Outline extends OutlineItems {
 				item = this.figures.add(item);
 			}
 			else {
+				if (last) {
+					last.setEnd(item.start);
+				}
+
 				item = super.add(item);
 			}
 		}
@@ -51,6 +67,11 @@ export default class Outline extends OutlineItems {
 		this.index.set(item.id, item);
 
 		return item;
+	}
+
+	setEnd (end) {
+		this.end = end;
+		this.lastValue?.setEnd(end);
 	}
 }
 

@@ -10,6 +10,10 @@ export default class OutlineItem {
 	constructor (info, options, parent) {
 		this.index = new Map();
 
+		if (!parent) {
+			console.warn("No parent for", info);
+		}
+
 		Object.defineProperties(this, {
 			spec: { value: info, enumerable: false, writable: true },
 			parent: { value: parent, enumerable: false, writable: true },
@@ -57,6 +61,10 @@ export default class OutlineItem {
 		let root = this.root;
 		let isRoot = root === this;
 		return isRoot ? "" : root.qualifiedNumber + this.numberSeparator;
+	}
+
+	nextItem () {
+		return this.parent?.valueAfter(this);
 	}
 
 	/**
