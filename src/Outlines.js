@@ -322,7 +322,12 @@ export default class Outlines {
 		}
 		else if (page && this[scope]) {
 			// Both scope and page, need to filter
-			return this[scope].to({filter: item => !item || item.url === page.url});
+			for (let heading of this[scope].values()) {
+				if (heading.url === page.url) {
+					return heading.children;
+				}
+			}
+			// return this[scope].to({filter: item => !item || item.url === page.url});
 		}
 
 		return this[scope] ?? null;
