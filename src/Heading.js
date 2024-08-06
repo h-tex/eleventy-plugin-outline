@@ -19,6 +19,10 @@ export default class Heading extends OutlineItem {
 		}
 	}
 
+	get parentHeading () {
+		return this.parent?.parent ?? null;
+	}
+
 	getById (id) {
 		if (this.id === id) {
 			return this;

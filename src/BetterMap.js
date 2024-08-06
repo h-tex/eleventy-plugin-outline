@@ -7,10 +7,6 @@ export default class BetterMap extends Map {
 		return [...this.values()].at(-1);
 	}
 
-	get length () {
-		return this.size;
-	}
-
 	indexOf (key) {
 		let i = 0;
 		for (let k of this.keys()) {
@@ -22,60 +18,28 @@ export default class BetterMap extends Map {
 		return -1;
 	}
 
-	/**
-	 * Inserts a key-value pair at the specified index
-	 * while preserving object references to this and the keys/values
-	 * @param {number} index
-	 * @param {*} key
-	 * @param {*} value
-	 */
-	insertAt (index, key, value) {
-		let pairs = [];
-		let entries = [...this.entries()].slice(index);
-
-		for (let [k, v] of entries) {
-			this.delete(k);
-			pairs.push([k, v]);
-		}
-
-		entries.unshift([key, value]);
-
-		for (let [k, v] of entries) {
-			this.set(k, v);
-		}
+	keyAt (index) {
+		return [...this.keys()][index];
 	}
 
-	insertBefore (key, newKey, value) {
-		let index = this.indexOf(key);
+	valueAfter (value) {
+		let values = [...this.values()];
+		let index = values.indexOf(value);
+
 		if (index === -1) {
-			return false;
+			return null;
 		}
 
-		this.insertAt(index, newKey, value);
+		return values[index + 1];
 	}
 
-	insertAfter (key, newKey, value) {
-		let index = this.indexOf(key);
-		if (index === -1) {
-			return false;
+	sort (compare = ([a], [b]) => a < b ? -1 : a > b ? 1 : 0) {
+		let entries = [...this.entries()].sort(compare);
+
+		this.clear();
+
+		for (let [key, value] of entries) {
+			this.set(key, value);
 		}
-
-		this.insertAt(index + 1, newKey, value);
-	}
-
-	/**
-	 * Assuming the map is sorted, insert a key-value pair
-	 * preserving sort order
-	 * @param {*} key
-	 * @param {*} value
-	 */
-	setSorted (key, value, compare = (a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0) {
-		for (let k of this.keys()) {
-			if (compare([key, value], [k, this.get(k)]) < 0) {
-				return this.insertBefore(k, key, value);
-			}
-		}
-
-		this.set(key, value);
 	}
 }

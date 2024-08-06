@@ -49,25 +49,14 @@ export default class OutlineItems extends BetterMap {
 	}
 
 	add (info) {
-		let item = new this.constructor.of(info, this.options, this.parent);
+		let item = new this.constructor.of(info, this.options, this);
 
 		this.countsByType[item.type] ??= 0;
 		let customNumber = item.number !== undefined;
 		item.number ??= ++this.countsByType[item.type];
 
 		this.delete(info.id); // This should not exist anyway
-		if (customNumber) {
-			// Insert at the right place
-			this.setSorted(item.id, item, (a, b) => {
-				[a, b] = [a[1], b[1]];
-				let ret = a.number - b.number;
-
-				return isNaN(ret) ? a.number.localeCompare(b.number) : ret;
-			});
-		}
-		else {
-			this.set(item.id, item);
-		}
+		this.set(item.id, item);
 
 		this.index.set(item.id, item);
 

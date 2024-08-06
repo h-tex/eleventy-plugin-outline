@@ -7,10 +7,9 @@ import { stringifyElement } from "./html.js";
 export default class OutlineItem {
 	kind = "item";
 
-	// Flat maps of id to object
-	index = new Map();
-
 	constructor (info, options, parent) {
+		this.index = new Map();
+
 		Object.defineProperties(this, {
 			spec: { value: info, enumerable: false, writable: true },
 			parent: { value: parent, enumerable: false, writable: true },
@@ -18,6 +17,8 @@ export default class OutlineItem {
 		});
 
 		if (info.qualifiedNumber) {
+			info.pinnedNumber = true;
+
 			// If the number is custom-set, we don’t really have a prefix
 			info.qualifiedNumberPrefix ??= "";
 			info.number = info.qualifiedNumber;
@@ -31,8 +32,6 @@ export default class OutlineItem {
 				writable: property !== "id", // we key on id so it should be immutable
 			});
 		}
-
-
 
 		this.type ??= this.options.getType(info) ?? this.constructor.defaultType;
 		this.label ??= this.options.getLabel(info, this.type) ?? capitalize(this.type);
