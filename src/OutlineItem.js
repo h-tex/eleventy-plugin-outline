@@ -11,8 +11,11 @@ export default class OutlineItem {
 	index = new Map();
 
 	constructor (info, options, parent) {
-		this.spec = info;
-		this.index = new Map();
+		Object.defineProperties(this, {
+			spec: { value: info, enumerable: false, writable: true },
+			parent: { value: parent, enumerable: false, writable: true },
+			options: { value: options, enumerable: false, writable: true },
+		});
 
 		if (info.qualifiedNumber) {
 			// If the number is custom-set, we don’t really have a prefix
@@ -29,11 +32,7 @@ export default class OutlineItem {
 			});
 		}
 
-		Object.defineProperties(this, {
-			spec: { value: info, enumerable: false, writable: true },
-			parent: { value: parent, enumerable: false, writable: true },
-			options: { value: options, enumerable: false, writable: true },
-		});
+
 
 		this.type ??= this.options.getType(info) ?? this.constructor.defaultType;
 		this.label ??= this.options.getLabel(info, this.type) ?? capitalize(this.type);
