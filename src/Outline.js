@@ -6,6 +6,7 @@ export default class Outline extends OutlineItems {
 	static of = Heading;
 
 	urls = new Map();
+	pageURLs = new Map();
 
 	/**
 	 * Will return this if it contains more than one top-level section
@@ -20,6 +21,11 @@ export default class Outline extends OutlineItems {
 		return 1 + (this.parent?.level ?? 0);
 	}
 
+	get length () {
+		return this.end - this.start;
+	}
+
+	// Not currently used anywhere, but could be useful
 	sort (
 		compareFunction = (a, b) => {
 			[a, b] = [a[1], b[1]];
@@ -62,6 +68,12 @@ export default class Outline extends OutlineItems {
 			let urls = this.urls.get(item.url) ?? [];
 			urls.push(item);
 			this.urls.set(item.url, urls);
+		}
+
+		if (item.pageURL) {
+			let pageURLs = this.pageURLs.get(item.pageURL) ?? [];
+			pageURLs.push(item);
+			this.pageURLs.set(item.pageURL, pageURLs);
 		}
 
 		this.index.set(item.id, item);

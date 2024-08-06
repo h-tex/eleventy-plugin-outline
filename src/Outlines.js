@@ -192,7 +192,8 @@ export default class Outlines {
 				html: originalHTML, originalHTML,
 				content,
 				start: this[scope].end + index,
-				inputPath, outputPath, url
+				inputPath, outputPath,
+				pageURL: url
 			};
 
 			let isHeading = info.tag.startsWith("h");
@@ -366,6 +367,7 @@ export default class Outlines {
 		let url = page?.url; // The URL of the referencing page
 		let urls = outline.urls; // URLs in this outline
 
+		// Replace empty links with labels like "Figure 3.2" or "Section 3.2"
 		content = content.replaceAll(emptyLink, (match, ...args) => {
 			let groups = processGroups(args.at(-1));
 			let info, href;
@@ -396,8 +398,6 @@ export default class Outlines {
 						// If hash not found, we still want to return firstHeading
 						info ??= firstHeading;
 					}
-
-					// TODO if page URL is different, rewrite href too
 				}
 
 				return match;
@@ -410,6 +410,9 @@ export default class Outlines {
 
 			return open + info.label + " " + info.qualifiedNumber + groups.close;
 		});
+
+		// TODO replace links to other files in the outline with local links
+		// (whether they are empty or not)
 
 		return content;
 	}

@@ -91,28 +91,8 @@ export default class OutlineItem {
 	}
 
 	toString () {
-		return stringifyElement(this);
+		return this.qualifiedNumber + ". " + this.label;
 	}
-
-	// to (changes = {}) {
-	// 	let {spec, transform, filter, options, parent} = changes;
-	// 	spec = Object.assign({}, this.spec, {number: this.number}, spec);
-	// 	options = Object.assign({}, this.options, options);
-	// 	let ret = new this.constructor(spec, options, parent ?? this.parent);
-	// 	ret.start = this.start;
-	// 	ret.end = this.end;
-	// 	ret = transform ? transform(ret) : ret;
-
-	// 	if (this.children) {
-	// 		ret.children = this.children.to({parent: ret, transform, filter, options});
-	// 	}
-
-	// 	if (this.figures) {
-	// 		ret.figures = this.figures.to({parent: ret, transform, filter, options});
-	// 	}
-
-	// 	return ret;
-	// }
 
 	add (item) {
 		this.index.set(item.id, item);
