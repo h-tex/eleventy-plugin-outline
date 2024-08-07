@@ -5,7 +5,7 @@ export default class Figures extends OutlineItems {
 	static of = Figure;
 
 	get numberSeparator () {
-		return this.options.figureNumberSeparator ?? ".";
+		return this.options.figureNumberSeparator ?? super.numberSeparator;
 	}
 
 	get qualifiedNumber () {

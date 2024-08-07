@@ -14,16 +14,12 @@ export default class Heading extends OutlineItem {
 			this.url = info.attributes["data-url"];
 		}
 		else {
-			this.url = this.parentHeading?.url ?? this.pageURL;
+			this.url = this.parentItem?.url ?? this.pageURL;
 		}
 
 		if (this.parent?.level && this.parent.level < this.level - 1) {
 			console.warn(`[outline] Level jump in ${this.url}: From ${this.parent} to ${this}`);
 		}
-	}
-
-	get parentHeading () {
-		return this.parent?.parent ?? null;
 	}
 
 	getById (id) {
@@ -77,13 +73,13 @@ export default class Heading extends OutlineItem {
 		if (this.parent.pageURLs.size > 1) {
 			return this;
 		}
-		else if (this.parentHeading) {
-			if (this.parentHeading.pageURL !== this.pageURL) {
+		else if (this.parentItem) {
+			if (this.parentItem.pageURL !== this.pageURL) {
 				// or this.parent?
 				return this;
 			}
 
-			return this.parentHeading.progressRoot;
+			return this.parentItem.progressRoot;
 		}
 		else {
 			return this.parent;

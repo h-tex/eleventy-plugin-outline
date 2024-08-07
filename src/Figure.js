@@ -4,7 +4,7 @@ export default class Figure extends OutlineItem {
 	kind = "figure";
 	static defaultType = "figure";
 
-	get qualifiedNumber () {
-		return this.rootPrefix + this.number;
+	get qualifiedNumberPrefix () {
+		return this.rootItem.qualifiedNumber + this.numberSeparator;
 	}
 }

@@ -1,23 +1,17 @@
+import OutlineNode from "./OutlineNode.js";
 import { capitalize } from "./util.js";
-import { stringifyElement } from "./html.js";
 
 /**
  * @abstract
  */
-export default class OutlineItem {
+export default class OutlineItem extends OutlineNode {
 	kind = "item";
 
 	constructor (info, options, parent) {
-		this.index = new Map();
-
-		if (!parent) {
-			console.warn("No parent for", info);
-		}
+		super(parent, options);
 
 		Object.defineProperties(this, {
 			spec: { value: info, enumerable: false, writable: true },
-			parent: { value: parent, enumerable: false, writable: true },
-			options: { value: options, enumerable: false, writable: true },
 		});
 
 		if (info.qualifiedNumber) {
@@ -41,13 +35,6 @@ export default class OutlineItem {
 		this.label ??= this.options.getLabel(info, this.type) ?? capitalize(this.type);
 	}
 
-	get root () {
-		return this.parent ? this.parent.root : this;
-	}
-
-	get numberSeparator () {
-		return this.options.getSeparator?.(this) ?? ".";
-	}
 
 	get qualifiedNumber () {
 		return this.qualifiedNumberPrefix + this.number;
@@ -57,24 +44,12 @@ export default class OutlineItem {
 		return this.parent?.qualifiedNumber ? this.parent.qualifiedNumber + this.numberSeparator : "";
 	}
 
-	get rootPrefix () {
-		let root = this.root;
-		let isRoot = root === this;
-		return isRoot ? "" : root.qualifiedNumber + this.numberSeparator;
+	get parentItem () {
+		return this.parent?.parent ?? null;
 	}
 
-	nextItem () {
-		return this.parent?.valueAfter(this);
-	}
-
-	/**
-	 * Get an item corresponds to the given id
-	 * regardless of how deeply nested it might be
-	 * @param {string} id
-	 * @returns {Heading | Figure}
-	 */
-	getById (id) {
-		return this.index.get(id);
+	get rootItem () {
+		return this.parent?.rootItem ?? this;
 	}
 
 	find (callback, options) {

@@ -16,19 +16,6 @@ export default class Outline extends OutlineItems {
 		return this.end - this.start;
 	}
 
-	// Not currently used anywhere, but could be useful
-	sort (
-		compareFunction = (a, b) => {
-			[a, b] = [a[1], b[1]];
-			let ret = a.number - b.number;
-
-			return isNaN(ret) ? a.number.localeCompare(b.number) : ret;
-		}
-	) {
-		super.sort(compareFunction);
-		this.needsSorting = false;
-	}
-
 	add (item) {
 		let last = this.lastValue; // possibly ancestor
 
