@@ -345,7 +345,8 @@ export default class Outlines {
 					return heading.children;
 				}
 			}
-			// return this[scope].to({filter: item => !item || item.url === page.url});
+
+			return null;
 		}
 
 		return this[scope] ?? null;
