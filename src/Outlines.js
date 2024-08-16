@@ -412,8 +412,33 @@ export default class Outlines {
 			return open + info.label + " " + info.qualifiedNumber + groups.close;
 		});
 
-		// TODO replace links to other files in the outline with local links
+		// Replace links to other files in the outline with local links
 		// (whether they are empty or not)
+		content = content.replaceAll(hrefRegex, (match, ...args) => {
+			let groups = processGroups(args.at(-1));
+			let href = groups.value;
+
+			if (!href.startsWith("#") && urls) {
+				let path = get_path(href);
+				let id = get_hash(href).slice(1);
+				let headings = urls.get(path) ?? urls.get(path + "/");
+
+				if (headings) {
+					let firstHeading = headings.values().next().value;
+					let info = id ? firstHeading.getById(id) : firstHeading;
+
+					if (info) {
+						info = outline.getById(info.id);
+
+						if (info) {
+							return `href="#${ info.id }"`;
+						}
+					}
+				}
+			}
+
+			return match;
+		});
 
 		return content;
 	}
