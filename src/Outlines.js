@@ -420,6 +420,13 @@ export default class Outlines {
 
 			if (!href.startsWith("#") && urls) {
 				let path = get_path(href);
+
+				// Ignore links to the page itself
+				let ignore = Boolean([path, path + "/"].includes(url));
+				if (ignore) {
+					return match;
+				}
+
 				let id = get_hash(href).slice(1);
 				let headings = urls.get(path) ?? urls.get(path + "/");
 
