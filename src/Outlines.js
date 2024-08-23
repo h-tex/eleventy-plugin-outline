@@ -412,40 +412,43 @@ export default class Outlines {
 			return open + info.label + " " + info.qualifiedNumber + groups.close;
 		});
 
-		// Replace links to other files in the outline with local links
-		// (whether they are empty or not)
-		content = content.replaceAll(hrefRegex, (match, ...args) => {
-			let groups = processGroups(args.at(-1));
-			let href = groups.value;
+		if (urls) {
+			// The outline spans multiple URLs
+			// Replace links to other files in the outline with local links
+			// (whether they are empty or not)
+			content = content.replaceAll(hrefRegex, (match, ...args) => {
+				let groups = processGroups(args.at(-1));
+				let href = groups.value;
 
-			if (!href.startsWith("#") && urls) {
-				let path = get_path(href);
+				if (!href.startsWith("#")) {
+					let path = get_path(href);
 
-				// Ignore links to the page itself
-				let ignore = Boolean([path, path + "/"].includes(url));
-				if (ignore) {
-					return match;
-				}
+					// Ignore links to the page itself
+					let ignore = Boolean([path, path + "/"].includes(url));
+					if (ignore) {
+						return match;
+					}
 
-				let id = get_hash(href).slice(1);
-				let headings = urls.get(path) ?? urls.get(path + "/");
+					let id = get_hash(href).slice(1);
+					let headings = urls.get(path) ?? urls.get(path + "/");
 
-				if (headings) {
-					let firstHeading = headings.values().next().value;
-					let info = id ? firstHeading.getById(id) : firstHeading;
-
-					if (info) {
-						info = outline.getById(info.id);
+					if (headings) {
+						let firstHeading = headings.values().next().value;
+						let info = id ? firstHeading.getById(id) : firstHeading;
 
 						if (info) {
-							return `href="#${ info.id }"`;
+							info = outline.getById(info.id);
+
+							if (info) {
+								return `href="#${ info.id }"`;
+							}
 						}
 					}
 				}
-			}
 
-			return match;
-		});
+				return match;
+			});
+		}
 
 		return content;
 	}
