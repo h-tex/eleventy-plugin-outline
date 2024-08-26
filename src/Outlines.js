@@ -12,7 +12,7 @@ import * as defaultOptions from "./defaultOptions.js";
 const headingRegex = html.element({tag: "h(?<level>[1-6])"});
 const figRegex = html.element({tag: "figure|table"});
 const captionRegex = html.element({tag: "figcaption"});
-const defRegex = re`${figRegex}|${headingRegex}`;
+const defRegex = re`${figRegex}|${headingRegex}|<!--|-->`;
 const emptyLink = html.element({tag: "a", content: ""});
 const hrefRegex = html.attribute({name: "href"});
 
@@ -172,7 +172,21 @@ export default class Outlines {
 		let openIgnoredHeading;
 		let originalContent = content;
 		let lastHeading;
+		let inComment = false;
 		content = content.replaceAll(defRegex, (originalHTML, ...args) => {
+			if (originalHTML === "<!--") {
+				inComment = true;
+				return originalHTML;
+			}
+			else if (originalHTML === "-->") {
+				inComment = false;
+				return originalHTML;
+			}
+
+			if (inComment) {
+				return originalHTML;
+			}
+
 			let groups = processGroups(args.at(-1));
 			let index = args.at(-3);
 
