@@ -15,7 +15,7 @@ const captionRegex = html.element({tag: "figcaption"});
 const defRegex = re`${figRegex}|${headingRegex}|<!--|-->`;
 const emptyLink = html.element({tag: "a", content: ""});
 const hrefRegex = html.attribute({name: "href"});
-const linkRegex = html.element({tag: "a", attr: "href"});
+const linkRegex = html.element({tag: "a"});
 
 const attributesToProperties = {
 	"data-number": "qualifiedNumber",
