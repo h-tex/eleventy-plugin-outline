@@ -7,4 +7,12 @@ export default class Figure extends OutlineItem {
 	get qualifiedNumberPrefix () {
 		return this.rootItem.qualifiedNumber + this.numberSeparator;
 	}
+
+	get progressRoot () {
+		return this.parentItem?.progressRoot ?? this.rootItem;
+	}
+
+	get progress () {
+		return this.start / this.progressRoot.length;
+	}
 }
