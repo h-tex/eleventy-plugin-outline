@@ -15,6 +15,7 @@ const captionRegex = html.element({tag: "figcaption"});
 const defRegex = re`${figRegex}|${headingRegex}|<!--|-->`;
 const emptyLink = html.element({tag: "a", content: ""});
 const hrefRegex = html.attribute({name: "href"});
+const linkRegex = html.element({tag: "a", attr: "href"});
 
 const attributesToProperties = {
 	"data-number": "qualifiedNumber",
@@ -430,15 +431,20 @@ export default class Outlines {
 			// The outline spans multiple URLs
 			// Replace links to other files in the outline with local links
 			// (whether they are empty or not)
-			content = content.replaceAll(hrefRegex, (match, ...args) => {
+			content = content.replaceAll(linkRegex, (match, ...args) => {
 				let groups = processGroups(args.at(-1));
-				let href = groups.value;
+				let attrs = groups.attrs;
+				attrs = html.parseAttributes(attrs);
 
-				if (!href.startsWith("#")) {
+				let href = attrs.href;
+				let classes = attrs.class ?? "";
+
+				let ignore = href.startsWith("#") || classes.includes("outline-ignore");
+				if (!ignore) {
 					let path = get_path(href);
 
 					// Ignore links to the page itself
-					let ignore = Boolean([path, path + "/"].includes(url));
+					ignore = [path, path + "/"].includes(url);
 					if (ignore) {
 						return match;
 					}
@@ -454,7 +460,7 @@ export default class Outlines {
 							info = outline.getById(info.id);
 
 							if (info) {
-								return `href="#${ info.id }"`;
+								return match.replace(href, `#${ info.id }`);
 							}
 						}
 					}
