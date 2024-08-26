@@ -439,7 +439,7 @@ export default class Outlines {
 				let href = attrs.href;
 				let classes = attrs.class ?? "";
 
-				let ignore = href.startsWith("#") || classes.includes("outline-ignore");
+				let ignore = href.startsWith("#") || /(?:^|\s)outline-ignore(?:$|\s)/.test(classes);
 				if (!ignore) {
 					let path = get_path(href);
 
