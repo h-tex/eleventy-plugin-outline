@@ -463,6 +463,11 @@ export default class Outlines {
 								return match.replace(href, `#${ info.id }`);
 							}
 						}
+						else if (id.startsWith("fn-")) {
+							// Footnotes in a multipage document should also become local
+							// Assumption: footnote IDs are unique across the document
+							return match.replace(href, `#${ id }`);
+						}
 					}
 				}
 
